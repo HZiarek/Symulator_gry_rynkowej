@@ -87,7 +87,8 @@ ALTER TABLE marki ADD CONSTRAINT marka_nazwa_un UNIQUE ( nazwa );
 CREATE TABLE producenci (
     id_producenta   NUMBER(3) NOT NULL,
     nazwa           VARCHAR2(50 CHAR) NOT NULL,
-    fundusze        NUMBER(10) NOT NULL
+    fundusze        NUMBER(10) NOT NULL,
+    czy_spasowal    CHAR(1) NOT NULL
 );
 
 ALTER TABLE producenci ADD CONSTRAINT producent_pk PRIMARY KEY ( id_producenta );
