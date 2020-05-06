@@ -7,7 +7,7 @@ BEGIN
         raise_application_error(-20225, 'Non Transferable FK constraint  on table MARKI is violated');
     END IF;
 END;
-
+/
 
 
 create or replace TRIGGER fkntm_zakup_konsumenta BEFORE
@@ -15,7 +15,7 @@ create or replace TRIGGER fkntm_zakup_konsumenta BEFORE
 BEGIN
     raise_application_error(-20225, 'Non Transferable FK constraint  on table ZAKUP_KONSUMENTA is violated');
 END;
-
+/
 
 
 create or replace TRIGGER ID_MARKI_AUTOINC 
@@ -26,7 +26,7 @@ BEGIN
   INTO :NEW.ID_MARKI
   FROM DUAL;
 END;
-
+/
 
 
 create or replace TRIGGER KOSZT_UTWORZENIA_MARKI 
@@ -38,7 +38,7 @@ BEGIN
     select koszt_utworzenia into koszt from RODZAJE_MAREK where jakosc_marki = :NEW.rodzaje_marek_jakosc_marki;
     update producent set FUNDUSZE = FUNDUSZE - koszt where ID_PRODUCENTA = :NEW.producent_id_producenta;
 END;
-
+/
 
 
 
@@ -53,7 +53,7 @@ BEGIN
     --uaktualnienie liczby dostepnych sztuk
     update marka set AKTUALNA_LICZBA_SZTUK = AKTUALNA_LICZBA_SZTUK - :new.ilosc where ID_MARKI = :NEW.marka_id_marki;
 END;
-
+/
 
 
 
@@ -68,7 +68,7 @@ BEGIN
         rozpocznij_runde;
     end if;
 END;
-
+/
 
 
 
@@ -92,7 +92,7 @@ BEGIN
     --dodanie numeru rundy
     select max(numer_rundy) into :new.licznik_rund_numer_rundy from licznik_rund;
 END;
-
+/
 
 
 
@@ -105,3 +105,4 @@ BEGIN
     select max(numer_rundy) into nr_rundy from licznik_rund;
     insert into HISTORIA_CEN values (:new.cena_za_sztuke, :new.id_marki, nr_rundy);
 END;
+/

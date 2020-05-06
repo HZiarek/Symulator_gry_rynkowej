@@ -5,7 +5,7 @@ BEGIN
         insert into rodzaje_marek values (i, 1000*i, 100*i);
     END LOOP;
 END GENERUJ_JAKOSCI_MARKI;
-
+/
 
 
 create or replace PROCEDURE GENERUJ_KONSUMENTOW (wybrana_opcja number)
@@ -27,7 +27,7 @@ BEGIN
                             DBMS_RANDOM.value(0.1, 0.99)); --podatnosc na marketing
     END LOOP;
 END GENERUJ_KONSUMENTOW;
-
+/
 
 
 create or replace PROCEDURE GENERUJ_KOSZTY_MAGAZYNOWANIA AS
@@ -36,7 +36,7 @@ BEGIN
         insert into KOSZT_MAGAZYNOWANIA values (i*100, i*10000);
     END LOOP;
 END GENERUJ_KOSZTY_MAGAZYNOWANIA;
-
+/
 
 
 create or replace PROCEDURE POTRAC_KOSZTY_MAGAZYNOWANIA AS 
@@ -54,7 +54,7 @@ BEGIN
         insert into magazynowanie values (rec.aktualna_liczba_sztuk, tmp_koszt, nr_rundy, rec.id_marki);
     END LOOP;
 END POTRAC_KOSZTY_MAGAZYNOWANIA;
-
+/
 
 
 
@@ -82,7 +82,7 @@ BEGIN
     --stworzenie uzytkownikow i dodanie ich do tabeli producentow
     STWORZ_GRACZY(4, wybrana_opcja);
 END ROZPOCZNIJ_GRE;
-
+/
 
 
 
@@ -96,7 +96,7 @@ BEGIN
   --koszty magazynowania na kolejna runde
   POTRAC_KOSZTY_MAGAZYNOWANIA;
 END ROZPOCZNIJ_RUNDE;
-
+/
 
 
 
@@ -137,7 +137,7 @@ BEGIN
         END LOOP;
     end;
 END STWORZ_GRACZY;
-
+/
 
 
 
@@ -165,7 +165,7 @@ BEGIN
             DBMS_OUTPUT.put_line ('Czyszczenie tabel nie powiodlo sie');
     END;
 END WYCZYSC_TABELE;
-
+/
 
 
 
@@ -236,7 +236,7 @@ BEGIN
         commit;
     END LOOP;
 END ZREALIZUJ_ZAKUPY;
-
+/
 
 
 
@@ -258,3 +258,4 @@ BEGIN
             DBMS_OUTPUT.put_line ('Restartowanie sekwencji nie powiodlo sie.');
     END;
 END ZRESTARTUJ_SEKWENCJE;
+/
