@@ -14,11 +14,11 @@ BEGIN
     --modyfikacja wspolczynnikow przywiazania konsumentow do marek
     FOR REC IN (select id_konsumenta from konsument)
     LOOP
-        select wplyw_na_docelowa_marke into wspolczynnik_modyfikacji from rodzaj_marketingu where ID_RODZAJU_MARKETINGU = :new.RODZ_MAR_ID_RODZ_MARKETINGU;
+        select wplyw_na_docelowa_marke into wspolczynnik_modyfikacji from rodzaj_marketingu where ID_RODZAJU_MARKETINGU = :new.RODZ_MARK_ID_RODZ_MARKETINGU;
         update przywiazanie_do_marki set wspolczynnik_przywiazania = wspolczynnik_przywiazania*wspolczynnik_modyfikacji
             where marka_id_marki = :new.marka_id_marki and konsument_id_konsumenta = REC.id_konsumenta;
         
-        select wplyw_na_inne_marki_prod into wspolczynnik_modyfikacji from rodzaj_marketingu where ID_RODZAJU_MARKETINGU = :new.RODZ_MAR_ID_RODZ_MARKETINGU;
+        select wplyw_na_inne_marki_prod into wspolczynnik_modyfikacji from rodzaj_marketingu where ID_RODZAJU_MARKETINGU = :new.RODZ_MARK_ID_RODZ_MARKETINGU;
         for CUR IN (select m.id_marki from marka m, producent p where p.id_producenta = m.producent_id_producenta and p.id_producenta = id_prod)
         loop
             update przywiazanie_do_marki set wspolczynnik_przywiazania = wspolczynnik_przywiazania*wspolczynnik_modyfikacji
@@ -115,8 +115,8 @@ BEGIN
     select max(numer_rundy) into :new.licznik_rund_numer_rundy from licznik_rund;
     
     --obliczenie kosztu
-    select koszt_staly into koszt from RODZAJ_MARKETINGU where ID_RODZAJU_MARKETINGU = :new.RODZ_MAR_ID_RODZ_MARKETINGU;
-    select koszt_per_klient into koszt_per_klient from RODZAJ_MARKETINGU where ID_RODZAJU_MARKETINGU = :new.RODZ_MAR_ID_RODZ_MARKETINGU;
+    select koszt_staly into koszt from RODZAJ_MARKETINGU where ID_RODZAJU_MARKETINGU = :new.RODZ_MARK_ID_RODZ_MARKETINGU;
+    select koszt_per_klient into koszt_per_klient from RODZAJ_MARKETINGU where ID_RODZAJU_MARKETINGU = :new.RODZ_MARK_ID_RODZ_MARKETINGU;
     :new.koszt := koszt + koszt_per_klient*:new.liczba_klientow;
 END;
 /

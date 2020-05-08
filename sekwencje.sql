@@ -24,7 +24,7 @@ DROP SEQUENCE ID_RODZAJU_MARKET_SEQ;
 CREATE SEQUENCE ID_RODZAJU_MARKET_SEQ INCREMENT BY 1 START WITH 4;
 
 --domyslne ustawienia poczatkowe
-insert into ustawienia_poczatkowe values (1, 1000, 4, 't', null, null, 100000, 1.1, 1, 0.99, 0.98);
+insert into ustawienia_poczatkowe values (1, 1000, 4, 't', null, null, 100000, 1.1, 1, 0.99, 0.98, 100000, 1000, 1000);
 commit;
 
 --domyslne rodzaje marketingu

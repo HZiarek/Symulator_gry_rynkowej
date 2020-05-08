@@ -1,5 +1,6 @@
 --usuwanie tabel
 DROP TABLE ocena_hipotetycznej_marki;
+DROP TABLE hipotetyczna_marka;
 DROP TABLE koszt_magazynowania;
 DROP TABLE ustawienia_poczatkowe;
 DROP TABLE dostep_producenta_his_zakup;
