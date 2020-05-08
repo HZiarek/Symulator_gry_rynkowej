@@ -1,4 +1,5 @@
 --usuwanie tabel
+DROP TABLE ocena_hipotetycznej_marki;
 DROP TABLE koszt_magazynowania;
 DROP TABLE ustawienia_poczatkowe;
 DROP TABLE dostep_producenta_his_zakup;
@@ -16,4 +17,3 @@ DROP TABLE rodzaj_marketingu;
 DROP TABLE licznik_rund;
 DROP TABLE konsument;
 DROP TABLE producent;
-DROP TABLE typ_badania_rynku;

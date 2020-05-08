@@ -14,11 +14,11 @@ BEGIN
     --modyfikacja wspolczynnikow przywiazania konsumentow do marek
     FOR REC IN (select id_konsumenta from konsument)
     LOOP
-        select wplyw_na_docelowa_marke into wspolczynnik_modyfikacji from rodzaj_marketingu where ID_RODZAJU_MARKETINGU = :new.ID_RODZAJU_MARKETINGU;
+        select wplyw_na_docelowa_marke into wspolczynnik_modyfikacji from rodzaj_marketingu where ID_RODZAJU_MARKETINGU = :new.RODZ_MAR_ID_RODZ_MARKETINGU;
         update przywiazanie_do_marki set wspolczynnik_przywiazania = wspolczynnik_przywiazania*wspolczynnik_modyfikacji
             where marka_id_marki = :new.marka_id_marki and konsument_id_konsumenta = REC.id_konsumenta;
         
-        select wplyw_na_inne_marki_prod into wspolczynnik_modyfikacji from rodzaj_marketingu where ID_RODZAJU_MARKETINGU = :new.ID_RODZAJU_MARKETINGU;
+        select wplyw_na_inne_marki_prod into wspolczynnik_modyfikacji from rodzaj_marketingu where ID_RODZAJU_MARKETINGU = :new.RODZ_MAR_ID_RODZ_MARKETINGU;
         for CUR IN (select m.id_marki from marka m, producent p where p.id_producenta = m.producent_id_producenta and p.id_producenta = id_prod)
         loop
             update przywiazanie_do_marki set wspolczynnik_przywiazania = wspolczynnik_przywiazania*wspolczynnik_modyfikacji
@@ -26,7 +26,7 @@ BEGIN
         end loop;
     end loop;
 END;
-
+/
 
 
 create or replace TRIGGER fkntm_marka BEFORE
@@ -38,7 +38,7 @@ BEGIN
         raise_application_error(-20225, 'Non Transferable FK constraint  on table MARKI is violated');
     END IF;
 END;
-
+/
 
 
 create or replace TRIGGER fkntm_zakup_konsumenta BEFORE
@@ -46,7 +46,7 @@ create or replace TRIGGER fkntm_zakup_konsumenta BEFORE
 BEGIN
     raise_application_error(-20225, 'Non Transferable FK constraint  on table ZAKUP_KONSUMENTA is violated');
 END;
-
+/
 
 
 create or replace TRIGGER ID_MARKI_AUTOINC 
@@ -57,7 +57,7 @@ BEGIN
   INTO :NEW.ID_MARKI
   FROM DUAL;
 END;
-
+/
 
 
 create or replace TRIGGER ID_RODZ_MARKET_AUTOINC 
@@ -68,7 +68,7 @@ BEGIN
   INTO :NEW.ID_RODZAJU_MARKETINGU
   FROM DUAL;
 END;
-
+/
 
 
 create or replace TRIGGER KOSZT_UTWORZENIA_MARKI 
@@ -87,7 +87,7 @@ BEGIN
         insert into PRZYWIAZANIE_DO_MARKI values (rec.id_konsumenta, 1.0, :new.id_marki);
     END LOOP;
 END;
-
+/
 
 
 create or replace TRIGGER POTRACENIE_KOSZTOW_PRODUKCJI 
@@ -101,7 +101,7 @@ BEGIN
     --uaktualnienie liczby dostepnych sztuk
     update marka set AKTUALNA_LICZBA_SZTUK = AKTUALNA_LICZBA_SZTUK - :new.ilosc where ID_MARKI = :NEW.marka_id_marki;
 END;
-
+/
 
 
 create or replace TRIGGER SPR_CZY_MOZLIWY_MARKETING 
@@ -115,11 +115,11 @@ BEGIN
     select max(numer_rundy) into :new.licznik_rund_numer_rundy from licznik_rund;
     
     --obliczenie kosztu
-    select koszt_staly into koszt from RODZAJ_MARKETINGU where ID_RODZAJU_MARKETINGU = :new.ID_RODZAJU_MARKETINGU;
-    select koszt_per_klient into koszt_per_klient from RODZAJ_MARKETINGU where ID_RODZAJU_MARKETINGU = :new.ID_RODZAJU_MARKETINGU;
+    select koszt_staly into koszt from RODZAJ_MARKETINGU where ID_RODZAJU_MARKETINGU = :new.RODZ_MAR_ID_RODZ_MARKETINGU;
+    select koszt_per_klient into koszt_per_klient from RODZAJ_MARKETINGU where ID_RODZAJU_MARKETINGU = :new.RODZ_MAR_ID_RODZ_MARKETINGU;
     :new.koszt := koszt + koszt_per_klient*:new.liczba_klientow;
 END;
-
+/
 
 
 create or replace TRIGGER SPR_CZY_WSZYSCY_SPASOWALI 
@@ -132,7 +132,7 @@ BEGIN
         rozpocznij_runde;
     end if;
 END;
-
+/
 
 
 create or replace TRIGGER SPR_MOZLIWOSCI_PRODUKCJI 
@@ -154,7 +154,7 @@ BEGIN
     --dodanie numeru rundy
     select max(numer_rundy) into :new.licznik_rund_numer_rundy from licznik_rund;
 END;
-
+/
 
 
 
@@ -166,7 +166,7 @@ BEGIN
   INTO :NEW.NUMER_OPCJI
   FROM DUAL;
 END;
-
+/
 
 
 create or replace TRIGGER UZUPELNIENIE_HISTORII_CEN 
@@ -178,7 +178,7 @@ BEGIN
     select max(numer_rundy) into nr_rundy from licznik_rund;
     insert into HISTORIA_CEN values (:new.cena_za_sztuke, :new.id_marki, nr_rundy);
 END;
-
+/
 
 
 
