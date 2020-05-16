@@ -19,9 +19,17 @@ CREATE SEQUENCE ID_RODZ_MARKETINGU_SEQ INCREMENT BY 1 START WITH 1;
 DROP SEQUENCE NR_OPCJI_USTAWIEN_POCZ_SEQ;
 CREATE SEQUENCE NR_OPCJI_USTAWIEN_POCZ_SEQ INCREMENT BY 1 START WITH 2;
 
---autoinkrementacja id ustawien poczatkowych
+--autoinkrementacja id rodzaju marketingu, 3 pierwsze zarezerwowane dla domyœlnych rodzajów marketingu
 DROP SEQUENCE ID_RODZAJU_MARKET_SEQ;
 CREATE SEQUENCE ID_RODZAJU_MARKET_SEQ INCREMENT BY 1 START WITH 4;
+
+--autoinkrementacja id hipotetycznej marki
+DROP SEQUENCE ID_HIPOTETYCZNEJ_MARKI_SEQ;
+CREATE SEQUENCE ID_HIPOTETYCZNEJ_MARKI_SEQ INCREMENT BY 1 START WITH 1;
+
+--autoinkrementacja id badania rynku
+DROP SEQUENCE ID_BADANIA_RYNKU_SEQ;
+CREATE SEQUENCE ID_BADANIA_RYNKU_SEQ INCREMENT BY 1 START WITH 1;
 
 --domyslne ustawienia poczatkowe
 insert into ustawienia_poczatkowe values (1, 1000, 4, 't', null, null, 100000, 1.1, 1, 0.99, 0.98, 100000, 1000, 1000);
