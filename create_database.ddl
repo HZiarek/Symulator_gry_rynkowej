@@ -252,7 +252,7 @@ ALTER TABLE ustawienia_poczatkowe ADD CONSTRAINT ustawienia_poczatkowe_pk PRIMAR
 CREATE TABLE zakup_konsumenta (
     licznik_rund_numer_rundy   NUMBER(5) NOT NULL,
     konsument_id_konsumenta    NUMBER(10) NOT NULL,
-    marka_id_marki             NUMBER(6) NOT NULL
+    marka_id_marki             NUMBER(6) 
 );
 
 ALTER TABLE zakup_konsumenta ADD CONSTRAINT zakup_konsumenta_pk PRIMARY KEY ( konsument_id_konsumenta,
@@ -270,21 +270,25 @@ ALTER TABLE badanie_rynku
 
 ALTER TABLE dostep_producenta_his_zakup
     ADD CONSTRAINT dost_prod_his_badanie_rynku_fk FOREIGN KEY ( badanie_rynku_id_badania_rynku )
-        REFERENCES badanie_rynku ( id_badania_rynku );
+        REFERENCES badanie_rynku ( id_badania_rynku )
+            ON DELETE CASCADE;
 
 ALTER TABLE dostep_producenta_his_zakup
     ADD CONSTRAINT dost_prod_his_zakup_konsum_fk FOREIGN KEY ( zakup_konsumenta_id_konsumenta,
                                                                zakup_konsumenta_numer_rundy )
         REFERENCES zakup_konsumenta ( konsument_id_konsumenta,
-                                      licznik_rund_numer_rundy );
+                                      licznik_rund_numer_rundy )
+            ON DELETE CASCADE;
 
 ALTER TABLE hipotetyczna_marka
     ADD CONSTRAINT hip_marka_producent_fk FOREIGN KEY ( producent_id_producenta )
-        REFERENCES producent ( id_producenta );
+        REFERENCES producent ( id_producenta )
+            ON DELETE CASCADE;
 
 ALTER TABLE hipotetyczna_marka
     ADD CONSTRAINT hip_marka_rodzaje_marek_fk FOREIGN KEY ( rodzaje_marek_jakosc_marki )
-        REFERENCES rodzaje_marek ( jakosc_marki );
+        REFERENCES rodzaje_marek ( jakosc_marki )
+            ON DELETE CASCADE;
 
 ALTER TABLE historia_cen
     ADD CONSTRAINT historia_cen_licznik_rund_fk FOREIGN KEY ( licznik_rund_numer_rundy )
@@ -333,15 +337,18 @@ ALTER TABLE marketing
 
 ALTER TABLE ocena_hipotetycznej_marki
     ADD CONSTRAINT oc_hip_marki_badanie_rynku_fk FOREIGN KEY ( badanie_rynku_id_badania_rynku )
-        REFERENCES badanie_rynku ( id_badania_rynku );
+        REFERENCES badanie_rynku ( id_badania_rynku )
+            ON DELETE CASCADE;
 
 ALTER TABLE ocena_hipotetycznej_marki
     ADD CONSTRAINT oc_hip_marki_hip_marka_fk FOREIGN KEY ( hip_mar_id_hipotetycznej_marki )
-        REFERENCES hipotetyczna_marka ( id_hipotetycznej_marki );
+        REFERENCES hipotetyczna_marka ( id_hipotetycznej_marki )
+            ON DELETE CASCADE;
 
 ALTER TABLE ocena_hipotetycznej_marki
     ADD CONSTRAINT oc_hip_marki_konsument_fk FOREIGN KEY ( konsument_id_konsumenta )
-        REFERENCES konsument ( id_konsumenta );
+        REFERENCES konsument ( id_konsumenta )
+            ON DELETE CASCADE;
 
 ALTER TABLE produkcja
     ADD CONSTRAINT produkcja_licznik_rund_fk FOREIGN KEY ( licznik_rund_numer_rundy )

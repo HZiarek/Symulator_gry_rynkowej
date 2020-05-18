@@ -1,7 +1,6 @@
 --usuwanie tabel
 DROP TABLE ocena_hipotetycznej_marki;
 DROP TABLE hipotetyczna_marka;
-DROP TABLE koszt_magazynowania;
 DROP TABLE ustawienia_poczatkowe;
 DROP TABLE dostep_producenta_his_zakup;
 DROP TABLE zakup_konsumenta;
@@ -10,7 +9,6 @@ DROP TABLE badanie_rynku;
 DROP TABLE historia_cen;
 DROP TABLE magazynowanie;
 DROP TABLE produkcja;
-DROP TABLE sprzedaz;
 DROP TABLE przywiazanie_do_marki;
 DROP TABLE marka;
 DROP TABLE rodzaje_marek;

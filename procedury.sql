@@ -30,15 +30,6 @@ END GENERUJ_KONSUMENTOW;
 /
 
 
-create or replace PROCEDURE GENERUJ_KOSZTY_MAGAZYNOWANIA AS
-BEGIN
-    FOR i IN 1 ..9 LOOP
-        insert into KOSZT_MAGAZYNOWANIA values (i*100, i*10000);
-    END LOOP;
-END GENERUJ_KOSZTY_MAGAZYNOWANIA;
-/
-
-
 create or replace PROCEDURE OCEN_HIPOTETYCZNA_MARKE (ID_producenta NUMBER, CZY_UWZGLEDNIC_PRODUCENTA CHAR, ID_BADANIA_RYNKU NUMBER, LICZBA_KONSUMENTOW NUMBER, DLUGOSC_HIS_ZAKUPOW NUMBER) AS
     ocena_klienta NUMBER;
     nr_rundy NUMBER;
@@ -106,20 +97,34 @@ END OCEN_HIPOTETYCZNA_MARKE;
 /
 
 
-create or replace PROCEDURE POTRAC_KOSZTY_MAGAZYNOWANIA AS 
-    tmp_koszt NUMBER (15, 0);
+create or replace PROCEDURE POTRAC_KOSZTY_MAGAZYNOWANIA (nr_opcji_stawien NUMBER) AS 
+    koszt NUMBER (15, 0);
     nr_rundy NUMBER (5, 0);
+    sposob_nalicz_kosztow CHAR(1);
+    koszt_mag_sztuki NUMBER (15, 0);
+    wielkosc_pow_mag NUMBER (12, 0);
+    upust NUMBER (2, 0);
 BEGIN
     select max(numer_rundy) into nr_rundy from licznik_rund;
-    FOR REC IN (SELECT m.id_marki, m.aktualna_liczba_sztuk, p.id_producenta, p.fundusze from marka m, producent p where m.producent_id_producenta = p.id_producenta)
-    LOOP
-        --okreslenie kosztu magazyniwania - tmp liniowo od liczby sztuk
-        tmp_koszt := rec.aktualna_liczba_sztuk * 100;
-        --obciazenie kosztami konta producenta
-        UPDATE producent SET fundusze = fundusze - tmp_koszt WHERE ID_PRODUCENTA = REC.id_producenta;
-        --dodanie wpisu dotabeli historii magazynowania
-        insert into magazynowanie values (rec.aktualna_liczba_sztuk, tmp_koszt, nr_rundy, rec.id_marki);
-    END LOOP;
+    select SPOSOB_NALICZ_KOSZT_MAGAZYN into sposob_nalicz_kosztow from USTAWIENIA_POCZATKOWE;
+    select "KOSZT_MAG_SZTUKI/POWIERZCHNI" into koszt_mag_sztuki from USTAWIENIA_POCZATKOWE;
+    
+    if sposob_nalicz_kosztow = 'l' then
+        FOR REC IN (SELECT m.id_marki, m.aktualna_liczba_sztuk, p.id_producenta, p.fundusze from marka m, producent p where m.producent_id_producenta = p.id_producenta)
+        LOOP
+            --okreslenie kosztu magazyniwania
+            koszt := rec.aktualna_liczba_sztuk * koszt_mag_sztuki;
+            --obciazenie kosztami konta producenta
+            UPDATE producent SET fundusze = fundusze - koszt WHERE ID_PRODUCENTA = REC.id_producenta;
+            --dodanie wpisu dotabeli historii magazynowania
+            insert into magazynowanie values (rec.aktualna_liczba_sztuk, koszt, nr_rundy, rec.id_marki);
+        END LOOP;
+    else
+        select WIELKOSC_POWIERZCHNI_MAG into wielkosc_pow_mag from USTAWIENIA_POCZATKOWE;
+        
+        
+        select UPUST_ZA_KOLEJNA_PRZEST_MAG into upust from USTAWIENIA_POCZATKOWE;
+    end if;
 END POTRAC_KOSZTY_MAGAZYNOWANIA;
 /
 
@@ -143,8 +148,6 @@ BEGIN
     GENERUJ_KONSUMENTOW(wybrana_opcja);
     --uzupelnienie tabeli jakosc marki
     GENERUJ_JAKOSCI_MARKI;
-    --uzupelnienie tabeli koszty magazynowania
-    GENERUJ_KOSZTY_MAGAZYNOWANIA;
     --stworzenie uzytkownikow i dodanie ich do tabeli producentow
     STWORZ_GRACZY(4, wybrana_opcja);
     --rozpocznij pierwsza runde
@@ -165,7 +168,7 @@ BEGIN
   ZREALIZUJ_ZAKUPY;
   
   --koszty magazynowania na kolejna runde
-  POTRAC_KOSZTY_MAGAZYNOWANIA;
+  POTRAC_KOSZTY_MAGAZYNOWANIA (1);
 END ROZPOCZNIJ_RUNDE;
 /
 
