@@ -67,7 +67,7 @@ BEGIN
   SELECT ID_BADANIA_RYNKU_SEQ.NEXTVAL
   INTO :NEW.ID_BADANIA_RYNKU
   FROM DUAL;
-  
+
   --numer rundy
     SELECT max(numer_rundy)
     INTO :NEW.licznik_rund_numer_rundy
@@ -153,6 +153,19 @@ END;
 /
 
 
+create or replace TRIGGER SPR_CZY_ISTNIEJE_UZYTKOWNIK 
+BEFORE INSERT ON PRODUCENT
+FOR EACH ROW
+DECLARE
+    czy_istnieje number;
+BEGIN
+    select count(username) into czy_istnieje from all_users where username = :new.nazwa;
+    if czy_istnieje = 0 then
+        raise_application_error(-20880, 'Brak uzytkownika o nazwie pasujacej do podanej');
+    end if;
+END;
+/
+
 
 create or replace TRIGGER SPR_CZY_MOZLIWY_MARKETING 
 BEFORE INSERT ON MARKETING
@@ -172,7 +185,6 @@ END;
 /
 
 
-
 create or replace TRIGGER SPR_CZY_WSZYSCY_SPASOWALI 
 AFTER UPDATE OF CZY_SPASOWAL ON PRODUCENT 
 DECLARE
@@ -184,7 +196,6 @@ BEGIN
     end if;
 END;
 /
-
 
 
 create or replace TRIGGER SPR_MOZLIWOSCI_PRODUKCJI 
