@@ -1,103 +1,4 @@
-create or replace PROCEDURE GENERUJ_JAKOSCI_MARKI AS 
-BEGIN
-  --temp version
-    FOR i IN 1 ..99 LOOP
-        insert into rodzaje_marek values (i, 1000*i, 100*i);
-    END LOOP;
-END GENERUJ_JAKOSCI_MARKI;
-/
-
-
-create or replace PROCEDURE GENERUJ_KONSUMENTOW (wybrana_opcja number)
-IS
-    liczba_kons number(10, 0);
-    cena_aspiracja number (5, 0);
-    jakosc_aspiracja number (2, 0);
-    przywiazanie_aspiracja number (4, 2); 
-BEGIN
-    select liczba_konsumentow into liczba_kons from ustawienia_poczatkowe where numer_opcji = wybrana_opcja;
-    FOR i IN 1 ..liczba_kons LOOP
-        cena_aspiracja := DBMS_RANDOM.value(100, 9999);
-        jakosc_aspiracja := DBMS_RANDOM.value(10, 99);
-        przywiazanie_aspiracja := DBMS_RANDOM.value(0.01, 99.99);
-        insert into konsument values (i,
-                            cena_aspiracja, DBMS_RANDOM.value(cena_aspiracja + 1, 10000), DBMS_RANDOM.value(1.01, 1.5), DBMS_RANDOM.value(0.5, 1), --cena
-                            jakosc_aspiracja, DBMS_RANDOM.value(1, jakosc_aspiracja-1), DBMS_RANDOM.value(1.01, 1.5), DBMS_RANDOM.value(0.5, 1), --jakosc
-                            przywiazanie_aspiracja, DBMS_RANDOM.value(0.01, przywiazanie_aspiracja), DBMS_RANDOM.value(1.01, 1.5), DBMS_RANDOM.value(0.5, 1), --przywiazanie do marki
-                            DBMS_RANDOM.value(0.1, 0.99)); --podatnosc na marketing
-    END LOOP;
-END GENERUJ_KONSUMENTOW;
-/
-
-
-create or replace PROCEDURE OCEN_HIPOTETYCZNA_MARKE (ID_producenta NUMBER, CZY_UWZGLEDNIC_PRODUCENTA CHAR, ID_BADANIA_RYNKU NUMBER, LICZBA_KONSUMENTOW NUMBER, DLUGOSC_HIS_ZAKUPOW NUMBER) AS
-    ocena_klienta NUMBER;
-    nr_rundy NUMBER;
-    f_cena NUMBER;
-    f_cena_1 NUMBER;
-    f_cena_2 NUMBER;
-    f_cena_3 NUMBER;
-    f_jakosc NUMBER;
-    f_jakosc_1 NUMBER;
-    f_jakosc_2 NUMBER;
-    f_jakosc_3 NUMBER;
-    stos_do_producenta NUMBER;
-    f_stos_do_producenta NUMBER;
-    f_stos_do_producenta_1 NUMBER;
-    f_stos_do_producenta_2 NUMBER;
-    f_stos_do_producenta_3 NUMBER;
-BEGIN
-    FOR REC IN (SELECT k.*, h.id_hipotetycznej_marki, h.rodzaje_marek_jakosc_marki as jakosc, h.cena_za_sztuke from hipotetyczna_marka h, 
-                (SELECT * FROM   
-                    (SELECT * FROM konsument
-                    ORDER BY dbms_random.value)  
-                    WHERE rownum <= LICZBA_KONSUMENTOW) k
-                WHERE h.producent_id_producenta = ID_producenta and h.CZY_UWZGLEDNIC_W_BADANIU = 't')
-        LOOP
-            --wyznaczenie wartosci funkcji dla kazdego z parametrow
-            --cena
-            f_cena_1 := rec.cena_zadowolenie*(rec.cena_za_sztuke - rec.cena_poziom_aspiracji)/(rec.cena_poziom_aspiracji - rec.cena_poziom_rezerwacji)+1;
-            f_cena_2 := (rec.cena_za_sztuke - rec.cena_poziom_rezerwacji)/(rec.cena_poziom_aspiracji - rec.cena_poziom_rezerwacji);
-            f_cena_3 := rec.cena_niezadowolenie*(rec.cena_za_sztuke - rec.cena_poziom_rezerwacji)/(rec.cena_poziom_aspiracji - rec.cena_poziom_rezerwacji);
-            f_cena := least (f_cena_1, f_cena_2, f_cena_3);
-            --jakosc
-            f_jakosc_1 := rec.jakosc_zadowolenie*(rec.jakosc - rec.jakosc_poziom_aspiracji)/(rec.jakosc_poziom_aspiracji - rec.jakosc_poziom_rezerwacji)+1;
-            f_jakosc_2 := (rec.jakosc - rec.jakosc_poziom_rezerwacji)/(rec.jakosc_poziom_aspiracji - rec.jakosc_poziom_rezerwacji);
-            f_jakosc_3 := rec.jakosc_niezadowolenie*(rec.jakosc - rec.jakosc_poziom_rezerwacji)/(rec.jakosc_poziom_aspiracji - rec.jakosc_poziom_rezerwacji);
-            f_jakosc := least (f_jakosc_1, f_jakosc_2, f_jakosc_3);
-
-            --stosunek_do_producenta
-            -- tylko jesli producent bedzie tego chcial
-            if CZY_UWZGLEDNIC_PRODUCENTA = 't' then
-                select avg(p.WSPOLCZYNNIK_PRZYWIAZANIA) into stos_do_producenta from przywiazanie_do_marki p, marka m
-                    where m.ID_MARKI = p.MARKA_ID_MARKI and m.PRODUCENT_ID_PRODUCENTA = ID_producenta and p.KONSUMENT_ID_KONSUMENTA = rec.id_konsumenta;
-
-                f_stos_do_producenta_1 := rec.przywiazanie_zadowolenie*(stos_do_producenta - rec.przywiazanie_poziom_aspiracji)/(rec.przywiazanie_poziom_aspiracji - rec.przywiazanie_poziom_rezerwacji)+1;
-                f_stos_do_producenta_2 := (stos_do_producenta - rec.przywiazanie_poziom_rezerwacji)/(rec.przywiazanie_poziom_aspiracji - rec.przywiazanie_poziom_rezerwacji);
-                f_stos_do_producenta_3 := rec.przywiazanie_niezadowolenie*(stos_do_producenta - rec.przywiazanie_poziom_rezerwacji)/(rec.przywiazanie_poziom_aspiracji - rec.przywiazanie_poziom_rezerwacji);
-                f_stos_do_producenta := least (f_stos_do_producenta_1, f_stos_do_producenta_2, f_stos_do_producenta_3);
-
-                ocena_klienta := round (least (f_cena, f_jakosc, f_stos_do_producenta) + 0.01*(f_cena + f_jakosc + f_stos_do_producenta), 10);
-            else
-                ocena_klienta := round (least (f_cena, f_jakosc) + 0.01*(f_cena + f_jakosc), 10);
-            end if;
-
-            insert into ocena_hipotetycznej_marki values (rec.id_konsumenta, id_badania_rynku, ocena_klienta, rec.id_hipotetycznej_marki);
-            commit;
-            --udostepnienie producentowi historii zakupow konsumenta
-            if DLUGOSC_HIS_ZAKUPOW > 0 then
-                select max(numer_rundy) into nr_rundy from licznik_rund;
-                for i in 1..DLUGOSC_HIS_ZAKUPOW loop
-                    insert into dostep_producenta_his_zakup values (rec.id_konsumenta, nr_rundy - i, ID_BADANIA_RYNKU);
-                end loop;
-                commit;
-            end if;           
-        END LOOP;
-END OCEN_HIPOTETYCZNA_MARKE;
-/
-
-
-create or replace PROCEDURE POTRAC_KOSZTY_MAGAZYNOWANIA (nr_opcji_ustawien NUMBER) AS 
+create or replace PROCEDURE POTRAC_KOSZTY_MAGAZYNOWANIA AS 
     koszt NUMBER (15, 0);
     nr_rundy NUMBER (5, 0);
     sposob_nalicz_kosztow CHAR(1);
@@ -107,25 +8,25 @@ create or replace PROCEDURE POTRAC_KOSZTY_MAGAZYNOWANIA (nr_opcji_ustawien NUMBE
     upust NUMBER;
     liczba_magazynow NUMBER (6, 0);
 BEGIN
-    select max(numer_rundy) into nr_rundy from licznik_rund;
-    select SPOSOB_NALICZ_KOSZT_MAGAZYN into sposob_nalicz_kosztow from USTAWIENIA_POCZATKOWE where NUMER_OPCJI = nr_opcji_ustawien;
-    select "KOSZT_MAG_SZTUKI/POWIERZCHNI" into koszt_mag_sztuki from USTAWIENIA_POCZATKOWE where NUMER_OPCJI = nr_opcji_ustawien;
+    select max(numer_rundy) into nr_rundy from numery_rund;
+    select SPOSOB_NALICZ_KOSZT_MAGAZYN into sposob_nalicz_kosztow from USTAWIENIA_POCZATKOWE where aktywna = 'a';
+    select KOSZT_MAG_SZTUKI_LUB_MAGAZYNU into koszt_mag_sztuki from USTAWIENIA_POCZATKOWE where aktywna = 'a';
 
     if sposob_nalicz_kosztow = 'l' then
-        FOR REC IN (SELECT m.id_marki, m.aktualna_liczba_sztuk, m.PRODUCENT_ID_PRODUCENTA from marka m)
+        FOR REC IN (SELECT m.id_marki, m.aktualna_liczba_sztuk, m.ID_PRODUCENTA from marki m where aktualna_liczba_sztuk > 0)
         LOOP
             --okreslenie kosztu magazyniwania
             koszt := rec.aktualna_liczba_sztuk * koszt_mag_sztuki;
             --obciazenie kosztami konta producenta
-            UPDATE producent SET fundusze = fundusze - koszt WHERE ID_PRODUCENTA = REC.producent_id_producenta;
+            UPDATE producenci SET fundusze = fundusze - koszt WHERE ID_PRODUCENTA = REC.id_producenta;
             --dodanie wpisu do tabeli historii magazynowania
-            insert into magazynowanie values (rec.aktualna_liczba_sztuk, koszt, nr_rundy, rec.id_marki);
+            insert into magazynowania values (rec.aktualna_liczba_sztuk, koszt, nr_rundy, rec.id_marki);
         END LOOP;
     else
-        select WIELKOSC_POWIERZCHNI_MAG into wielkosc_pow_mag from USTAWIENIA_POCZATKOWE where NUMER_OPCJI = nr_opcji_ustawien;
-        select UPUST_ZA_KOLEJNA_PRZEST_MAG into upust from USTAWIENIA_POCZATKOWE where NUMER_OPCJI = nr_opcji_ustawien;
+        select WIELKOSC_POWIERZCHNI_MAG into wielkosc_pow_mag from USTAWIENIA_POCZATKOWE where aktywna = 'a';
+        select UPUST_ZA_KOLEJNY_MAGAZYN into upust_per_magazyn from USTAWIENIA_POCZATKOWE where aktywna = 'a';
   
-        FOR REC IN (select sum(aktualna_liczba_sztuk) as liczba_sztuk, PRODUCENT_ID_PRODUCENTA from marka group by PRODUCENT_ID_PRODUCENTA)
+        FOR REC IN (select sum(aktualna_liczba_sztuk) as liczba_sztuk, ID_PRODUCENTA from marki where aktualna_liczba_sztuk > 0 group by ID_PRODUCENTA)
         LOOP
             --okreslenie jaki upust przysluguje za liczbe wynajetych magazynow; ostateczny upust nie moze byc wiekszy niz 50%
             liczba_magazynow := CEIL(rec.liczba_sztuk/wielkosc_pow_mag);
@@ -138,23 +39,69 @@ BEGIN
             --oplaconej w ramach magazynowania innej marki
             koszt := CEIL(rec.liczba_sztuk/wielkosc_pow_mag) * koszt_mag_sztuki * (100-upust)/100;
             --obciazenie kosztami konta producenta
-            UPDATE producent SET fundusze = fundusze - koszt WHERE ID_PRODUCENTA = REC.producent_id_producenta;
+            UPDATE producenci SET fundusze = fundusze - koszt WHERE ID_PRODUCENTA = REC.ID_PRODUCENTA;
             --dodanie wpisow do tabeli historii magazynowania
-            FOR MAR IN (select id_marki, aktualna_liczba_sztuk, PRODUCENT_ID_PRODUCENTA from marka where PRODUCENT_ID_PRODUCENTA = rec.producent_id_producenta)
+            FOR MAR IN (select id_marki, aktualna_liczba_sztuk, ID_PRODUCENTA from marki where ID_PRODUCENTA = rec.ID_PRODUCENTA)
             LOOP
-                insert into magazynowanie values (mar.aktualna_liczba_sztuk, koszt*(mar.aktualna_liczba_sztuk/rec.liczba_sztuk), nr_rundy, mar.id_marki);
+                insert into magazynowania values (mar.aktualna_liczba_sztuk, koszt*(mar.aktualna_liczba_sztuk/rec.liczba_sztuk), nr_rundy, mar.id_marki);
             END LOOP;
          END LOOP;
     end if;
 END POTRAC_KOSZTY_MAGAZYNOWANIA;
 /
 
+create or replace PROCEDURE ROZPOCZNIJ_RUNDE AS
+--procedura uruchamiana rozpoczyna nowa runde poprzez zwiekszenie licznika rund
+BEGIN
+  --zwiekszenie licznika rund - ! czy z sekwencja ma to sens
+  insert into numery_rund values (null);
+  
+  --przywrocenie producentom mozliwosci wykonywania dzialan
+  update producenci set czy_spasowal = 'n';
 
-create or replace PROCEDURE RESTART_PARAMETROW_PRODUCENTOW (wybrana_opcja NUMBER) AS 
+  --realizacja zakupow klientow
+  ZREALIZUJ_ZAKUPY;
+
+  --koszty magazynowania na kolejna runde
+  POTRAC_KOSZTY_MAGAZYNOWANIA;
+END ROZPOCZNIJ_RUNDE;
+/
+
+create or replace PROCEDURE ROZPOCZNIJ_GRE AS
+    czy_wstawic_jakosci char(1);
+BEGIN
+    --sprawdzenie czy wybrana opcja istnieje
+    declare
+        aktywna_opcja number;
+    BEGIN
+        select count(numer_zestawu) into aktywna_opcja from USTAWIENIA_POCZATKOWE where aktywna = 'a';
+        if aktywna_opcja <> 1 then
+            raise_application_error(-20805, 'Brak aktywnego zestawu ustawien poczatkowych');
+        end if;
+    END;
+    --czyszczenie zawartosci po poprzedniej grze
+    WYCZYSC_TABELE;
+    --restartowanie sekwencji
+    ZRESTARTUJ_SEKWENCJE;
+    --stworzenie konsumentow
+    GENERUJ_KONSUMENTOW;
+    --wstawienie domyslnych wartosci jakosci marki wraz z referencyjnymi kosztami produkcji jesli taka opcja zostala wybrana w ustawieniach poczatkowych
+    select czy_jakosci_marek_domyslne into czy_wstawic_jakosci from ustawienia_poczatkowe where aktywna = 'a';
+    if czy_wstawic_jakosci = 't' then
+        WSTAW_DOMYSLNE_JAKOSCI_MAREK;
+    end if;
+    --stworzenie uzytkownikow i dodanie ich do tabeli producentow
+    RESTART_PARAMETROW_PRODUCENTOW;
+    --rozpocznij pierwsza runde
+    insert into numery_rund values (null);
+END ROZPOCZNIJ_GRE;
+/
+
+create or replace PROCEDURE RESTART_PARAMETROW_PRODUCENTOW AS 
     pocz_fundusze number (10, 0);
 BEGIN
-    select poczatkowe_fundusze into pocz_fundusze from ustawienia_poczatkowe where numer_opcji = wybrana_opcja;
-    update PRODUCENT set FUNDUSZE = pocz_fundusze, CZY_SPASOWAL = 'n';
+    select poczatkowe_fundusze into pocz_fundusze from ustawienia_poczatkowe where aktywna = 'a';
+    update PRODUCENCI set FUNDUSZE = pocz_fundusze, CZY_SPASOWAL = 'n';
     commit;
 END RESTART_PARAMETROW_PRODUCENTOW;
 /
@@ -178,73 +125,70 @@ BEGIN
 END RESTART_SEKWENCJI;
 /
 
-
-create or replace PROCEDURE ROZPOCZNIJ_GRE (wybrana_opcja NUMBER) AS
-BEGIN
-    --sprawdzenie czy wybrana opcja istnieje
-    declare
-        aktywna_opcja number;
-    BEGIN
-        select count(numer_opcji) into aktywna_opcja from USTAWIENIA_POCZATKOWE where NUMER_OPCJI = wybrana_opcja;
-        if aktywna_opcja <> 1 then
-            raise_application_error(-20805, 'Wybrana opcja ustawien poczatkowych nie istnieje');
-        end if;
-    END;
-    --czyszczenie zawartosci po poprzedniej grze
-    WYCZYSC_TABELE;
-    --restartowanie sekwencji
-    ZRESTARTUJ_SEKWENCJE;
-    --stworzenie konsumentow
-    GENERUJ_KONSUMENTOW(wybrana_opcja);
-    --uzupelnienie tabeli jakosc marki
-    GENERUJ_JAKOSCI_MARKI;
-    --stworzenie uzytkownikow i dodanie ich do tabeli producentow
-    RESTART_PARAMETROW_PRODUCENTOW (wybrana_opcja);
-    --rozpocznij pierwsza runde
-    insert into licznik_rund values (null);
-END ROZPOCZNIJ_GRE;
-/
-
-
-create or replace PROCEDURE ROZPOCZNIJ_RUNDE AS
---procedura uruchamiana rozpoczyna nowa runde poprzez zwiekszenie licznika rund
-BEGIN
-  --realizacja dzialan marketingowych i badanie rynku - wyniki od razu
-
-  --zwiekszenie licznika rund - ! czy z sekwencja ma to sens
-  insert into licznik_rund values (null);
-
-  --realizacja zakupow klientow
-  ZREALIZUJ_ZAKUPY;
-
-  --koszty magazynowania na kolejna runde
-  POTRAC_KOSZTY_MAGAZYNOWANIA (1);
-END ROZPOCZNIJ_RUNDE;
-/
-
-
 create or replace PROCEDURE WYCZYSC_TABELE AS 
 BEGIN
     --czyszczenie
-    EXECUTE IMMEDIATE 'TRUNCATE TABLE dostep_producenta_his_zakup';
-    EXECUTE IMMEDIATE 'TRUNCATE TABLE ocena_hipotetycznej_marki';
-    EXECUTE IMMEDIATE 'TRUNCATE TABLE historia_cen';
-    EXECUTE IMMEDIATE 'TRUNCATE TABLE magazynowanie';
-    EXECUTE IMMEDIATE 'TRUNCATE TABLE produkcja';
-    EXECUTE IMMEDIATE 'TRUNCATE TABLE przywiazanie_do_marki';
-    EXECUTE IMMEDIATE 'TRUNCATE TABLE marketing';
-            
-    DELETE FROM hipotetyczna_marka CASCADE;
-    DELETE FROM zakup_konsumenta CASCADE;
-    DELETE FROM badanie_rynku CASCADE;
-    DELETE FROM marka CASCADE;
-    DELETE FROM rodzaje_marek CASCADE;
-    DELETE FROM licznik_rund CASCADE;
-    DELETE FROM konsument CASCADE;
+    EXECUTE IMMEDIATE 'TRUNCATE TABLE dostepy_producentow_his_zakup';
+    EXECUTE IMMEDIATE 'TRUNCATE TABLE oceny_marek';
+    EXECUTE IMMEDIATE 'TRUNCATE TABLE historie_cen';
+    EXECUTE IMMEDIATE 'TRUNCATE TABLE magazynowania';
+    EXECUTE IMMEDIATE 'TRUNCATE TABLE produkcje';
+    EXECUTE IMMEDIATE 'TRUNCATE TABLE przywiazania_do_marek';
+    EXECUTE IMMEDIATE 'TRUNCATE TABLE marketingi';
+    
+    DELETE FROM PRZYNALEZNOSCI_DO_GRUP CASCADE;
+    DELETE FROM GRUPY_KONSUMENTOW CASCADE;
+    DELETE FROM zakupy_konsumentow CASCADE;
+    DELETE FROM badania_rynku CASCADE;
+    DELETE FROM marki CASCADE;
+    DELETE FROM jakosci_marek CASCADE;
+    DELETE FROM numery_rund CASCADE;
+    DELETE FROM konsumenci CASCADE;
     commit;
 END WYCZYSC_TABELE;
 /
 
+create or replace PROCEDURE ZRESTARTUJ_SEKWENCJE AS 
+BEGIN
+    RESTART_SEKWENCJI ('LICZNIK_RUND_SEQ');
+    RESTART_SEKWENCJI ('ID_MARKI_SEQ');
+    RESTART_SEKWENCJI ('ID_PRODUKCJI_SEQ');
+    RESTART_SEKWENCJI ('ID_RODZAJU_MARKET_SEQ');
+END ZRESTARTUJ_SEKWENCJE;
+/
+
+create or replace PROCEDURE GENERUJ_KONSUMENTOW
+IS
+    liczba_kons number(10, 0);
+    cena_aspiracja number (5, 0);
+    jakosc_aspiracja number (2, 0);
+    przywiazanie_aspiracja number (4, 2); 
+BEGIN
+    select liczba_konsumentow into liczba_kons from ustawienia_poczatkowe where aktywna = 'a';
+    FOR i IN 1 ..liczba_kons LOOP
+        cena_aspiracja := DBMS_RANDOM.value(100, 9999);
+        jakosc_aspiracja := DBMS_RANDOM.value(10, 99);
+        przywiazanie_aspiracja := DBMS_RANDOM.value(0.01, 99.99);
+        insert into konsumenci values (i,
+                            cena_aspiracja, DBMS_RANDOM.value(cena_aspiracja + 1, 10000), --cena
+                            jakosc_aspiracja, DBMS_RANDOM.value(1, jakosc_aspiracja-1), --jakosc
+                            przywiazanie_aspiracja, DBMS_RANDOM.value(0.01, przywiazanie_aspiracja), --przywiazanie do marki
+                            DBMS_RANDOM.value(0.1, 0.99)); --podatnosc na marketing
+    END LOOP;
+END GENERUJ_KONSUMENTOW;
+/
+
+create or replace PROCEDURE WSTAW_DOMYSLNE_JAKOSCI_MAREK
+IS
+BEGIN
+   insert into jakosci_marek values (1, 1000);
+   insert into jakosci_marek values (2, 1100);
+   insert into jakosci_marek values (3, 1200);
+   insert into jakosci_marek values (4, 1300);
+   insert into jakosci_marek values (5, 1400);
+   commit;
+END WSTAW_DOMYSLNE_JAKOSCI_MAREK;
+/
 
 create or replace PROCEDURE ZREALIZUJ_ZAKUPY AS
     nr_rundy NUMBER;
@@ -252,6 +196,8 @@ create or replace PROCEDURE ZREALIZUJ_ZAKUPY AS
     wspolczynnik_modyfikacji NUMBER;
     max_ocena NUMBER;
     ocena_klienta NUMBER;
+    zadowolenie NUMBER := 0.001;
+    niezadowolenie NUMBER := 1000;
     f_cena NUMBER;
     f_cena_1 NUMBER;
     f_cena_2 NUMBER;
@@ -265,64 +211,54 @@ create or replace PROCEDURE ZREALIZUJ_ZAKUPY AS
     f_przywiazanie_2 NUMBER;
     f_przywiazanie_3 NUMBER;
 BEGIN
-    select max(numer_rundy) into nr_rundy from licznik_rund;
+    select max(numer_rundy) into nr_rundy from numery_rund;
 
-    FOR REC IN ((SELECT * from konsument))
+    FOR REC IN ((SELECT * from konsumenci))
     LOOP
-        FOR MAR IN (SELECT m.id_marki, m.cena_za_sztuke as cena, m.RODZAJE_MAREK_JAKOSC_MARKI as jakosc,  m.AKTUALNA_LICZBA_SZTUK, p.WSPOLCZYNNIK_PRZYWIAZANIA as przywiazanie from marka m, PRZYWIAZANIE_DO_MARKI p
-                        where m.ID_MARKI = p.MARKA_ID_MARKI and p.KONSUMENT_ID_KONSUMENTA = REC.id_konsumenta)
+        FOR MAR IN (SELECT m.id_marki, m.cena_za_sztuke as cena, m.JAKOSC_MARKI as jakosc,  m.AKTUALNA_LICZBA_SZTUK, p.WSPOLCZYNNIK_PRZYWIAZANIA as przywiazanie from marki m, PRZYWIAZANIA_DO_MAREK p
+                        where m.ID_MARKI = p.ID_MARKI and p.ID_KONSUMENTA = REC.id_konsumenta)
         LOOP
             --wyznaczenie wartosci funkcji dla kazdego z parametrow
             --cena
-            f_cena_1 := rec.cena_zadowolenie*(mar.cena - rec.cena_poziom_aspiracji)/(rec.cena_poziom_aspiracji - rec.cena_poziom_rezerwacji)+1;
+            f_cena_1 := zadowolenie*(mar.cena - rec.cena_poziom_aspiracji)/(rec.cena_poziom_aspiracji - rec.cena_poziom_rezerwacji)+1;
             f_cena_2 := (mar.cena - rec.cena_poziom_rezerwacji)/(rec.cena_poziom_aspiracji - rec.cena_poziom_rezerwacji);
-            f_cena_3 := rec.cena_niezadowolenie*(mar.cena - rec.cena_poziom_rezerwacji)/(rec.cena_poziom_aspiracji - rec.cena_poziom_rezerwacji);
+            f_cena_3 := niezadowolenie*(mar.cena - rec.cena_poziom_rezerwacji)/(rec.cena_poziom_aspiracji - rec.cena_poziom_rezerwacji);
             f_cena := least (f_cena_1, f_cena_2, f_cena_3);
             --jakosc
-            f_jakosc_1 := rec.jakosc_zadowolenie*(mar.jakosc - rec.jakosc_poziom_aspiracji)/(rec.jakosc_poziom_aspiracji - rec.jakosc_poziom_rezerwacji)+1;
+            f_jakosc_1 := zadowolenie*(mar.jakosc - rec.jakosc_poziom_aspiracji)/(rec.jakosc_poziom_aspiracji - rec.jakosc_poziom_rezerwacji)+1;
             f_jakosc_2 := (mar.jakosc - rec.jakosc_poziom_rezerwacji)/(rec.jakosc_poziom_aspiracji - rec.jakosc_poziom_rezerwacji);
-            f_jakosc_3 := rec.jakosc_niezadowolenie*(mar.jakosc - rec.jakosc_poziom_rezerwacji)/(rec.jakosc_poziom_aspiracji - rec.jakosc_poziom_rezerwacji);
+            f_jakosc_3 := niezadowolenie*(mar.jakosc - rec.jakosc_poziom_rezerwacji)/(rec.jakosc_poziom_aspiracji - rec.jakosc_poziom_rezerwacji);
             f_jakosc := least (f_jakosc_1, f_jakosc_2, f_jakosc_3);
             --przywiazanie
-            f_przywiazanie_1 := rec.przywiazanie_zadowolenie*(mar.przywiazanie - rec.przywiazanie_poziom_aspiracji)/(rec.przywiazanie_poziom_aspiracji - rec.przywiazanie_poziom_rezerwacji)+1;
+            f_przywiazanie_1 := zadowolenie*(mar.przywiazanie - rec.przywiazanie_poziom_aspiracji)/(rec.przywiazanie_poziom_aspiracji - rec.przywiazanie_poziom_rezerwacji)+1;
             f_przywiazanie_2 := (mar.przywiazanie - rec.przywiazanie_poziom_rezerwacji)/(rec.przywiazanie_poziom_aspiracji - rec.przywiazanie_poziom_rezerwacji);
-            f_przywiazanie_3 := rec.przywiazanie_niezadowolenie*(mar.przywiazanie - rec.przywiazanie_poziom_rezerwacji)/(rec.przywiazanie_poziom_aspiracji - rec.przywiazanie_poziom_rezerwacji);
+            f_przywiazanie_3 := niezadowolenie*(mar.przywiazanie - rec.przywiazanie_poziom_rezerwacji)/(rec.przywiazanie_poziom_aspiracji - rec.przywiazanie_poziom_rezerwacji);
             f_przywiazanie := least (f_przywiazanie_1, f_przywiazanie_2, f_przywiazanie_3);
 
             --ostateczna ocena
             ocena_klienta := round (least (f_cena, f_jakosc, f_przywiazanie) + 0.01*(f_cena + f_jakosc + f_przywiazanie), 10);
-            update marka set tymczasowa_ocena_klienta = ocena_klienta where id_marki = mar.id_marki;
+            update marki set tymczasowa_ocena_klienta = ocena_klienta where id_marki = mar.id_marki;
         END LOOP;
 
-        select max(tymczasowa_ocena_klienta) into max_ocena from marka where AKTUALNA_LICZBA_SZTUK > 0;         
+        select max(tymczasowa_ocena_klienta) into max_ocena from marki where AKTUALNA_LICZBA_SZTUK > 0;         
         --jesli nie ma produktow zadnej marki to konsument nabywa produkt socjalny, czyli w historii zakupow wpisywany jest null
         if max_ocena is not null then
-            select id_marki into wybrana_marka from marka where tymczasowa_ocena_klienta = max_ocena;
-            update marka set aktualna_liczba_sztuk = aktualna_liczba_sztuk - 1 where id_marki = wybrana_marka;
-            insert into zakup_konsumenta values (nr_rundy, rec.id_konsumenta, wybrana_marka);
+            select id_marki into wybrana_marka from marki where tymczasowa_ocena_klienta = max_ocena;
+            update marki set aktualna_liczba_sztuk = aktualna_liczba_sztuk - 1 where id_marki = wybrana_marka;
+            insert into zakupy_konsumentow values (nr_rundy, rec.id_konsumenta, wybrana_marka);
         else
-            insert into zakup_konsumenta values (nr_rundy, rec.id_konsumenta, null);
+            insert into zakupy_konsumentow values (nr_rundy, rec.id_konsumenta, null);
         end if;
         commit;
 
         --wszystkie marki ktore byly ocenione wyzej niz produkt tej zakupionej nie zaspokoily oczekiwan klienta, wiec traca w jego oczach
-        select niezaspokojony_popyt_wplyw into wspolczynnik_modyfikacji from USTAWIENIA_POCZATKOWE where numer_opcji = 3;
-        FOR OC IN (select m.id_marki, p.konsument_id_konsumenta from marka m, PRZYWIAZANIE_DO_MARKI p
-                    where m.ID_MARKI = p.MARKA_ID_MARKI and p.KONSUMENT_ID_KONSUMENTA = REC.id_konsumenta and m.tymczasowa_ocena_klienta > max_ocena)
+        select niezaspokojony_popyt_wplyw into wspolczynnik_modyfikacji from USTAWIENIA_POCZATKOWE where aktywna = 'a';
+        FOR OC IN (select m.id_marki, p.id_konsumenta from marki m, PRZYWIAZANIA_DO_MAREK p
+                    where m.ID_MARKI = p.ID_MARKI and p.ID_KONSUMENTA = REC.id_konsumenta and m.tymczasowa_ocena_klienta > max_ocena)
         LOOP
-            update PRZYWIAZANIE_DO_MARKI set WSPOLCZYNNIK_PRZYWIAZANIA = WSPOLCZYNNIK_PRZYWIAZANIA*wspolczynnik_modyfikacji
-            where KONSUMENT_ID_KONSUMENTA = OC.KONSUMENT_ID_KONSUMENTA and marka_id_marki = oc.id_marki;
+            update PRZYWIAZANIA_DO_MAREK set WSPOLCZYNNIK_PRZYWIAZANIA = WSPOLCZYNNIK_PRZYWIAZANIA*wspolczynnik_modyfikacji
+            where ID_KONSUMENTA = OC.ID_KONSUMENTA and id_marki = oc.id_marki;
         END LOOP;
     END LOOP;
 END ZREALIZUJ_ZAKUPY;
-/
-
-
-create or replace PROCEDURE ZRESTARTUJ_SEKWENCJE AS 
-BEGIN
-    RESTART_SEKWENCJI ('LICZNIK_RUND_SEQ');
-    RESTART_SEKWENCJI ('ID_MARKI_SEQ');
-    RESTART_SEKWENCJI ('ID_HIPOTETYCZNEJ_MARKI_SEQ');
-    RESTART_SEKWENCJI ('ID_BADANIA_RYNKU_SEQ');
-END ZRESTARTUJ_SEKWENCJE;
 /

@@ -1,0 +1,84 @@
+CREATE OR REPLACE VIEW MARKI_P
+AS SELECT 
+    m.ID_MARKI,
+    m.NAZWA_MARKI,
+    m.KOSZT_PRODUKCJI_SZTUKI,
+    m.CENA_ZA_SZTUKE,
+    m.JAKOSC_MARKI,
+    m.CZY_UTWORZONA,
+    m.AKTUALNA_LICZBA_SZTUK
+FROM
+    MARKI m, PRODUCENCI p
+WHERE
+    m.id_producenta = p.id_producenta
+    AND
+    p.NAZWA_PRODUCENTA = sys_context(
+        'APEX$SESSION'
+        ,'APP_USER'
+    );
+    
+    
+CREATE OR REPLACE VIEW PRODUCENCI_P
+AS SELECT
+    ID_PRODUCENTA,
+    NAZWA_PRODUCENTA,
+    TO_CHAR(FUNDUSZE/100, '99999999999990.99') AS FUNDUSZE,
+    CZY_SPASOWAL
+FROM
+    PRODUCENCI
+WHERE
+    NAZWA_PRODUCENTA = sys_context(
+        'APEX$SESSION'
+        ,'APP_USER'
+    );
+    
+CREATE OR REPLACE VIEW PRODUKCJE_P
+AS SELECT
+    p.ID_PRODUKCJI,
+    m.NAZWA_MARKI,
+    p.NUMER_RUNDY,
+    p.WOLUMEN, 
+    TO_CHAR(p.KOSZT_PRODUKCJI/100, '99999999999990.99') AS KOSZT_PRODUKCJI
+FROM
+    PRODUKCJE p, MARKI m, PRODUCENCI r
+WHERE
+    p.id_marki = m.id_marki
+    and m.id_producenta = r.id_producenta
+    and r.NAZWA_PRODUCENTA = sys_context(
+        'APEX$SESSION'
+        ,'APP_USER'
+    );
+    
+CREATE OR REPLACE VIEW MAGAZYNOWANIE_P
+AS SELECT
+    m.NAZWA_MARKI,
+    p.NUMER_RUNDY,
+    p.WOLUMEN, 
+    TO_CHAR(p.KOSZT_MAGAZYNOWANIA/100, '99999999999990.99') AS KOSZT_MAGAZYNOWANIA
+FROM
+    MAGAZYNOWANIA p, MARKI m, PRODUCENCI r
+WHERE
+    p.id_marki = m.id_marki
+    and m.id_producenta = r.id_producenta
+    and r.NAZWA_PRODUCENTA = sys_context(
+        'APEX$SESSION'
+        ,'APP_USER'
+    );
+    
+CREATE OR REPLACE VIEW MARKETING_P
+AS SELECT
+    p.ID_MARKETINGU,
+    p.NUMER_RUNDY,
+    m.NAZWA_MARKI,
+    p.ID_RODZAJU_MARKETINGU,
+    p.LICZBA_KLIENTOW,
+    TO_CHAR(p.KOSZT_MARKETINGU/100, '99999999999990.99') AS KOSZT_MARKETINGU
+FROM
+    MARKETINGI p, MARKI m, PRODUCENCI r
+WHERE
+    p.id_marki = m.id_marki
+    and m.id_producenta = r.id_producenta
+    and r.NAZWA_PRODUCENTA = sys_context(
+        'APEX$SESSION'
+        ,'APP_USER'
+    );
