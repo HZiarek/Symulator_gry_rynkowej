@@ -216,7 +216,6 @@ ALTER TABLE rodzaje_marketingu ADD CONSTRAINT rodzaje_marketingu_pk PRIMARY KEY 
 CREATE TABLE ustawienia_poczatkowe (
     numer_zestawu                   NUMBER(2) NOT NULL,
     aktywna                         CHAR(1 CHAR) DEFAULT 'n' NOT NULL,
-    liczba_konsumentow              NUMBER(10) NOT NULL,
     warunek_zakonczenia_rundy       CHAR(1 CHAR) NOT NULL,
     czas_rundy                      NUMBER(4),
     liczba_rund                     NUMBER(5),
@@ -226,9 +225,18 @@ CREATE TABLE ustawienia_poczatkowe (
     zakup_wplyw_na_inne_marki_pro   NUMBER(5, 3) NOT NULL,
     brak_zakupu_wplyw_na_marke      NUMBER(5, 3) NOT NULL,
     niezaspokojony_popyt_wplyw      NUMBER(5, 3) NOT NULL,
+    liczba_konsumentow              NUMBER(10) NOT NULL,
+    wym_max_cena                    NUMBER(10) NOT NULL,
+    wym_min_cena                    NUMBER(10) NOT NULL,
+    wym_kons_max_roznica_cena       NUMBER(10) NOT NULL,
+    wym_kons_min_roznica_cena       NUMBER(10) NOT NULL,
+    wym_kons_max_roznica_jakosc     NUMBER(2) NOT NULL,
+    wym_kons_min_roznica_jakosc     NUMBER(2) NOT NULL,
+    wym_kons_max_roznica_przyw      NUMBER(4, 2) NOT NULL,
+    wym_kons_min_roznica_przyw      NUMBER(4, 2) NOT NULL,
     sposob_nalicz_koszt_magazyn     CHAR(1 CHAR) DEFAULT 'm' NOT NULL,
-    koszt_mag_sztuki_lub_magazynu   NUMBER(15) NOT NULL,
     wielkosc_powierzchni_mag        NUMBER(12),
+    koszt_mag_sztuki_lub_magazynu   NUMBER(15) NOT NULL,
     upust_za_kolejny_magazyn        NUMBER(2),
     czy_jakosci_marek_domyslne      CHAR(1 CHAR) NOT NULL,
     opis                            VARCHAR2(200 CHAR)
@@ -251,13 +259,13 @@ COMMENT ON COLUMN ustawienia_poczatkowe.aktywna IS
     ;
 
 COMMENT ON COLUMN ustawienia_poczatkowe.warunek_zakonczenia_rundy IS
-    '''t'' - up≥ynπ≥ okreúlony czas
+    '''t'' - up≈ÇynƒÖ≈Ç okre≈õlony czas
 ''m'' - wszyscy gracz wykonali ruch
-''b'' - up≥ynπ≥ okreúlony czas lub wszyscy gracze wykonali ruch '
+''b'' - up≈ÇynƒÖ≈Ç okre≈õlony czas lub wszyscy gracze wykonali ruch '
     ;
 
 COMMENT ON COLUMN ustawienia_poczatkowe.czas_rundy IS
-    'Czas w godzinach. Jeúli jest wybrana opcja, w ktÛrej warunkiem zakoÒczenia rundy jest ruch wszystkich graczy, wÛwczas czas nie jest brany pod uwagÍ.'
+    'Czas w godzinach. Je≈õli jest wybrana opcja, w kt√≥rej warunkiem zako≈Ñczenia rundy jest ruch wszystkich graczy, w√≥wczas czas nie jest brany pod uwagƒô.'
     ;
 
 COMMENT ON COLUMN ustawienia_poczatkowe.zakup_wplyw_na_docelowa_marke IS
@@ -274,16 +282,46 @@ COMMENT ON COLUMN ustawienia_poczatkowe.niezaspokojony_popyt_wplyw IS
     'Okresla jaki wplyw na wspolczynnik przywiazania konsumenta do danej marki ma niezaspokojenie popytu przez producenta, tzn sytuacja w ktorej konsument decyduje sie na zakup produktu, ale nie moze go nabyc.'
     ;
 
+COMMENT ON COLUMN ustawienia_poczatkowe.wym_max_cena IS
+    'Wymagania konsumenta - maksymalna wartosc poziomu rezerwacji konsumenta w kryterium ceny.';
+
+COMMENT ON COLUMN ustawienia_poczatkowe.wym_min_cena IS
+    'Wymagania konsumenta - mnimalna wartosc poziomu aspiracji konsumenta w kryterium ceny.';
+
+COMMENT ON COLUMN ustawienia_poczatkowe.wym_kons_max_roznica_cena IS
+    'Wymagania konsumenta - mozliwa maksymalna roznica miedzy poziomem rezerwacji a poziomiem aspiracji konsumenta w kryterium ceny.'
+    ;
+
+COMMENT ON COLUMN ustawienia_poczatkowe.wym_kons_min_roznica_cena IS
+    'Wymagania konsumenta - mozliwa minimalna roznica miedzy poziomem rezerwacji a poziomiem aspiracji konsumenta w kryterium ceny.'
+    ;
+
+COMMENT ON COLUMN ustawienia_poczatkowe.wym_kons_max_roznica_jakosc IS
+    'Wymagania konsumenta - mozliwa maksymalna roznica miedzy poziomem aspiracji a poziomiem rezerwacji konsumenta w kryterium jakosci.'
+    ;
+
+COMMENT ON COLUMN ustawienia_poczatkowe.wym_kons_min_roznica_jakosc IS
+    'Wymagania konsumenta - mozliwa minimalna roznica miedzy poziomem aspiracji a poziomiem rezerwacji konsumenta w kryterium jakosci.'
+    ;
+
+COMMENT ON COLUMN ustawienia_poczatkowe.wym_kons_max_roznica_przyw IS
+    'Wymagania konsumenta - mozliwa maksymalna roznica miedzy poziomem aspiracji a poziomiem rezerwacji konsumenta w kryterium przywiazania do marki.'
+    ;
+
+COMMENT ON COLUMN ustawienia_poczatkowe.wym_kons_min_roznica_przyw IS
+    'Wymagania konsumenta - mozliwa minimalna roznica miedzy poziomem aspiracji a poziomiem rezerwacji konsumenta w kryterium przywiazania do marki.'
+    ;
+
 COMMENT ON COLUMN ustawienia_poczatkowe.sposob_nalicz_koszt_magazyn IS
     '''l'' - liniowy
 ''m'' - producent placi za magazyn o okreslonej wielkosci, niezaleznie od stopnia zapelnienia';
 
+COMMENT ON COLUMN ustawienia_poczatkowe.wielkosc_powierzchni_mag IS
+    'Okre≈õla wielkosc powierzchni magazynowej, czyli ile maksymalnie sztuk towaru zmiesci sie na powierzchni magazynowej.';
+
 COMMENT ON COLUMN ustawienia_poczatkowe.koszt_mag_sztuki_lub_magazynu IS
     'Koszt zmagazynowania jednej sztuki (jesli obowiazuje liniowe naliczanie oplat) lub calego przedzialu (jesli obowiazuje naliczanie oplat zwiazane z powierzchnia magazynowa).'
     ;
-
-COMMENT ON COLUMN ustawienia_poczatkowe.wielkosc_powierzchni_mag IS
-    'Okreúla wielkosc powierzchni magazynowej, czyli ile maksymalnie sztuk towaru zmiesci sie na powierzchni magazynowej.';
 
 COMMENT ON COLUMN ustawienia_poczatkowe.upust_za_kolejny_magazyn IS
     'Jaki upust (w %) dostanie gracz za kazda kolejna (poza pierwsza) wykorzystana przestrzenia magazynowa.';

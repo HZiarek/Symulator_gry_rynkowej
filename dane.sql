@@ -1,5 +1,7 @@
 --domyslne ustawienia poczatkowe
-insert into ustawienia_poczatkowe values (1, 'a', 100, 't', null, null, 90000000, 100000, 1.1, 1, 0.99, 0.98, 'm', 100000, 100, 5, 't', 'Ustawienia testowe');
+insert into ustawienia_poczatkowe values (1, 'a', 't', null, null, 90000000, 100000, 1.1, 1, 0.99, 0.98,
+                                            1000, 10000, 1000, 2000, 500, 2, 1, 0.4, 0.1,
+                                            'm', 100000, 100, 5, 't', 'Ustawienia testowe');
 commit;
 
 --domyslne rodzaje marketingu

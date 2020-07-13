@@ -78,7 +78,7 @@ BEGIN
   
   --zwiekszenie licznika rund - ! czy z sekwencja ma to sens
   insert into numery_rund values (null);
-  commit;
+  --commit;
 END ROZPOCZNIJ_RUNDE;
 /
 
@@ -98,16 +98,17 @@ BEGIN
     WYCZYSC_TABELE;
     --restartowanie sekwencji
     ZRESTARTUJ_SEKWENCJE;
+    --wstawienie domyslnych wartosci jakosci marki wraz z referencyjnymi kosztami produkcji jesli taka opcja zostala wybrana w ustawieniach poczatkowych
+    select czy_jakosci_marek_domyslne into czy_wstawic_jakosci from ustawienia_poczatkowe where aktywna = 'a';
+    if czy_wstawic_jakosci = 't' then
+        DELETE FROM jakosci_marek CASCADE;
+        WSTAW_DOMYSLNE_JAKOSCI_MAREK;
+    end if;
     --stworzenie konsumentow
     GENERUJ_KONSUMENTOW;
     --stworzenie bazowych grup konsumentow
     GENERUJ_GRUPY_KONSUMENTOW;
-    --wstawienie domyslnych wartosci jakosci marki wraz z referencyjnymi kosztami produkcji jesli taka opcja zostala wybrana w ustawieniach poczatkowych
-    select czy_jakosci_marek_domyslne into czy_wstawic_jakosci from ustawienia_poczatkowe where aktywna = 'a';
-    if czy_wstawic_jakosci = 't' then
-        WSTAW_DOMYSLNE_JAKOSCI_MAREK;
-    end if;
-    --stworzenie uzytkownikow i dodanie ich do tabeli producentow
+    --restartowanie parametrow producentow, czyli graczy
     RESTART_PARAMETROW_PRODUCENTOW;
     --rozpocznij pierwsza runde
     insert into numery_rund values (1);
@@ -159,7 +160,6 @@ BEGIN
     DELETE FROM zakupy_konsumentow CASCADE;
     DELETE FROM badania_rynku CASCADE;
     DELETE FROM marki CASCADE;
-    DELETE FROM jakosci_marek CASCADE;
     DELETE FROM numery_rund CASCADE;
     DELETE FROM konsumenci CASCADE;
     commit;
@@ -310,22 +310,20 @@ BEGIN
                     where ID_KONSUMENTA = rec.ID_KONSUMENTA;
         end if;
         
-        commit;
+        --commit;
     END LOOP;
 END ZREALIZUJ_ZAKUPY;
 /
 
-create or replace PROCEDURE OCEN_MARKE(BADANIE_RYNKU NUMBER, GRUPA_KONSUMENTOW NUMBER, DLUGOSC_HIS_ZAKUPOW NUMBER,
+create or replace PROCEDURE OCEN_MARKE(BADANIE_RYNKU NUMBER, MARKA NUMBER, GRUPA_KONSUMENTOW NUMBER, DLUGOSC_HIS_ZAKUPOW NUMBER,
                                         UWZGLEDNIC_JAKOSC CHAR, UWZGLEDNIC_CENE CHAR, UWZGLEDNIC_STOSUNEK_DO_MARKI CHAR,
                                         UWZG_STOSUNEK_DO_PRODUCENTA CHAR
 ) AS
     ocena_konsumenta NUMBER;
     nr_rundy NUMBER;
-    MARKA NUMBER;
     czy_docelowa_marka_utworzona NUMBER;
     liczba_wszystkich_marek NUMBER;
 BEGIN
-    select id_marki into marka from BADANIA_RYNKU where id_badania_rynku = badanie_rynku;
     select count(id_marki) into liczba_wszystkich_marek from marki where czy_utworzona = 't';
     --badanie rynku odbywa sie jako porownanie pewnej marki (utworzonej lub nie) z pozostalymi markami dostepnymi na rynku, czyli utworzonymi
     --jesli badana marka nie zostala jeszcze utworzona to liczebnosc zbioru analizowanych marek musi zostac zwiekszona o 1
@@ -383,7 +381,7 @@ BEGIN
                         null;
                 END;
             end loop;
-            commit;
+            --commit;
         end if;
     end loop;
 END OCEN_MARKE;
