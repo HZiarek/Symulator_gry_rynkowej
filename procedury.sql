@@ -276,7 +276,7 @@ BEGIN
                 jakosc, 't',
                 przywiazanie_do_marki, 't',
                 przywiazanie_do_producenta, 't'
-            ) as f_osiagniecia_oc_marki from WARTOSCI_FUNKCJI_OSIAGNIECIA_MPO_P
+            ) as f_osiagniecia_oc_marki from WARTOSCI_FUNKCJI_OSIAG_MPO_P
             where id_konsumenta = rec.id_konsumenta and czy_utworzona = 't'
             order by f_osiagniecia_oc_marki desc)
         LOOP
@@ -353,11 +353,11 @@ BEGIN
                 wart.przywiazanie_do_marki, UWZGLEDNIC_STOSUNEK_DO_MARKI,
                 wart.przywiazanie_do_producenta, UWZG_STOSUNEK_DO_PRODUCENTA
             ) as f_osiagniecia_oc_marki
-        from WARTOSCI_FUNKCJI_OSIAGNIECIA_MPO_P wart, przynaleznosci_do_grup przyn
+        from WARTOSCI_FUNKCJI_OSIAG_MPO_P wart, przynaleznosci_do_grup przyn
         where wart.id_konsumenta = przyn.id_konsumenta and przyn.id_grupy_konsumentow = GRUPA_KONSUMENTOW and id_marki = marka
         ) m,
         
-        WARTOSCI_FUNKCJI_OSIAGNIECIA_MPO_P p
+        WARTOSCI_FUNKCJI_OSIAG_MPO_P p
     where
         p.ID_KONSUMENTA = m.id_konsumenta and p.czy_utworzona = 't'
     )
@@ -408,8 +408,8 @@ END POLICZ_WYMIAR_MPO;
 create or replace FUNCTION POLICZ_MPO_WYBRANE_WYMIARY (
                     CENA NUMBER, CZY_UWZGL_CENE CHAR,
                     JAKOSC NUMBER, CZY_UWZGL_JAKOSC CHAR,
-                    PRZYWIAZANIE_DO_MARKI NUMBER, CZY_UWZGL_PRZYWIAZANIE_DO_MARKI CHAR,
-                    PRZYWIAZANIE_DO_PRODUCENTA NUMBER, CZY_UWZGL_PRZYWIAZANIE_DO_PRODUCENTA CHAR)
+                    PRZYWIAZANIE_DO_MARKI NUMBER, CZY_UWZGL_PRZYW_DO_MARKI CHAR,
+                    PRZYWIAZANIE_DO_PRODUCENTA NUMBER, CZY_UWZGL_PRZYW_DO_PRODUCENTA CHAR)
 RETURN NUMBER
 AS
     epsilon NUMBER := 0.01;
@@ -427,12 +427,12 @@ BEGIN
         minimum := least(jakosc, minimum); 
     end if;
     
-    if CZY_UWZGL_przywiazanie_do_marki = 't' then
+    if CZY_UWZGL_PRZYW_DO_MARKI = 't' then
         suma := suma + przywiazanie_do_marki;
         minimum := least(przywiazanie_do_marki, minimum); 
     end if;
     
-    if CZY_UWZGL_przywiazanie_do_producenta = 't' then
+    if CZY_UWZGL_PRZYW_DO_PRODUCENTA = 't' then
         suma := suma + przywiazanie_do_producenta;
         minimum := least(przywiazanie_do_producenta, minimum); 
     end if;
