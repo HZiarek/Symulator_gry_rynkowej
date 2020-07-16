@@ -1,0 +1,2398 @@
+--------------------------------------------------------
+--  File created - czwartek-lipca-16-2020   
+--------------------------------------------------------
+--------------------------------------------------------
+--  DDL for Sequence ID_BADANIA_RYNKU_SEQ
+--------------------------------------------------------
+
+   CREATE SEQUENCE  "INZYNIERKA"."ID_BADANIA_RYNKU_SEQ"  MINVALUE 0 MAXVALUE 9999999999999999999999999999 INCREMENT BY 1 START WITH 1 CACHE 20 NOORDER  NOCYCLE ;
+--------------------------------------------------------
+--  DDL for Sequence ID_GRUPY_KONSUMENTOW_SEQ
+--------------------------------------------------------
+
+   CREATE SEQUENCE  "INZYNIERKA"."ID_GRUPY_KONSUMENTOW_SEQ"  MINVALUE 0 MAXVALUE 9999999999999999999999999999 INCREMENT BY 1 START WITH 21 CACHE 20 NOORDER  NOCYCLE ;
+--------------------------------------------------------
+--  DDL for Sequence ID_HIPOTETYCZNEJ_MARKI_SEQ
+--------------------------------------------------------
+
+   CREATE SEQUENCE  "INZYNIERKA"."ID_HIPOTETYCZNEJ_MARKI_SEQ"  MINVALUE 0 MAXVALUE 9999999999999999999999999999 INCREMENT BY 1 START WITH 21 CACHE 20 NOORDER  NOCYCLE ;
+--------------------------------------------------------
+--  DDL for Sequence ID_MARKETINGU_SEQ
+--------------------------------------------------------
+
+   CREATE SEQUENCE  "INZYNIERKA"."ID_MARKETINGU_SEQ"  MINVALUE 1 MAXVALUE 9999999999999999999999999999 INCREMENT BY 1 START WITH 1 CACHE 20 NOORDER  NOCYCLE ;
+--------------------------------------------------------
+--  DDL for Sequence ID_MARKI_SEQ
+--------------------------------------------------------
+
+   CREATE SEQUENCE  "INZYNIERKA"."ID_MARKI_SEQ"  MINVALUE 0 MAXVALUE 9999999999999999999999999999 INCREMENT BY 1 START WITH 21 CACHE 20 NOORDER  NOCYCLE ;
+--------------------------------------------------------
+--  DDL for Sequence ID_PRODUCENTA_SEQ
+--------------------------------------------------------
+
+   CREATE SEQUENCE  "INZYNIERKA"."ID_PRODUCENTA_SEQ"  MINVALUE 1 MAXVALUE 9999999999999999999999999999 INCREMENT BY 1 START WITH 41 CACHE 20 NOORDER  NOCYCLE ;
+--------------------------------------------------------
+--  DDL for Sequence ID_PRODUKCJI_SEQ
+--------------------------------------------------------
+
+   CREATE SEQUENCE  "INZYNIERKA"."ID_PRODUKCJI_SEQ"  MINVALUE 0 MAXVALUE 9999999999999999999999999999 INCREMENT BY 1 START WITH 1 CACHE 20 NOORDER  NOCYCLE ;
+--------------------------------------------------------
+--  DDL for Sequence ID_RODZAJU_MARKET_SEQ
+--------------------------------------------------------
+
+   CREATE SEQUENCE  "INZYNIERKA"."ID_RODZAJU_MARKET_SEQ"  MINVALUE 0 MAXVALUE 9999999999999999999999999999 INCREMENT BY 1 START WITH 1 CACHE 20 NOORDER  NOCYCLE ;
+--------------------------------------------------------
+--  DDL for Sequence LICZNIK_RUND_SEQ
+--------------------------------------------------------
+
+   CREATE SEQUENCE  "INZYNIERKA"."LICZNIK_RUND_SEQ"  MINVALUE 0 MAXVALUE 9999999999999999999999999999 INCREMENT BY 1 START WITH 1 CACHE 20 ORDER  NOCYCLE ;
+--------------------------------------------------------
+--  DDL for Sequence NR_OPCJI_USTAWIEN_POCZ_SEQ
+--------------------------------------------------------
+
+   CREATE SEQUENCE  "INZYNIERKA"."NR_OPCJI_USTAWIEN_POCZ_SEQ"  MINVALUE 1 MAXVALUE 9999999999999999999999999999 INCREMENT BY 1 START WITH 1 CACHE 20 NOORDER  NOCYCLE ;
+--------------------------------------------------------
+--  DDL for Table BADANIA_RYNKU
+--------------------------------------------------------
+
+  CREATE TABLE "INZYNIERKA"."BADANIA_RYNKU" 
+   (	"ID_BADANIA_RYNKU" NUMBER(6,0), 
+	"NUMER_RUNDY" NUMBER(5,0), 
+	"HIS_ZAKUPOW_LICZBA_RUND" NUMBER(5,0) DEFAULT 0, 
+	"ID_MARKI" NUMBER(6,0), 
+	"ID_GRUPY_KONSUMENTOW" NUMBER(5,0), 
+	"KOSZT_BADANIA_RYNKU" NUMBER(15,0), 
+	"UWZGLEDNIC_JAKOSC" CHAR(1 CHAR) DEFAULT 'n', 
+	"UWZGLEDNIC_CENE" CHAR(1 CHAR) DEFAULT 'n', 
+	"UWZGLEDNIC_STOSUNEK_DO_MARKI" CHAR(1 CHAR) DEFAULT 'n', 
+	"UWZG_STOSUNEK_DO_PRODUCENTA" CHAR(1 CHAR) DEFAULT 'n'
+   ) SEGMENT CREATION IMMEDIATE 
+  PCTFREE 10 PCTUSED 40 INITRANS 1 MAXTRANS 255 NOCOMPRESS LOGGING
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Table DOSTEPY_PRODUCENTOW_HIS_ZAKUP
+--------------------------------------------------------
+
+  CREATE TABLE "INZYNIERKA"."DOSTEPY_PRODUCENTOW_HIS_ZAKUP" 
+   (	"ID_KONSUMENTA" NUMBER(10,0), 
+	"NUMER_RUNDY" NUMBER(5,0), 
+	"ID_BADANIA_RYNKU" NUMBER(6,0)
+   ) SEGMENT CREATION IMMEDIATE 
+  PCTFREE 10 PCTUSED 40 INITRANS 1 MAXTRANS 255 NOCOMPRESS LOGGING
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Table GRUPY_KONSUMENTOW
+--------------------------------------------------------
+
+  CREATE TABLE "INZYNIERKA"."GRUPY_KONSUMENTOW" 
+   (	"ID_GRUPY_KONSUMENTOW" NUMBER(5,0), 
+	"KOSZT_UZYSKANIA_OCEN" NUMBER(10,0), 
+	"KOSZT_HIS_ZAKUP_JEDNA_TURA" NUMBER(10,0), 
+	"OPIS" VARCHAR2(200 CHAR)
+   ) SEGMENT CREATION IMMEDIATE 
+  PCTFREE 10 PCTUSED 40 INITRANS 1 MAXTRANS 255 NOCOMPRESS LOGGING
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Table HISTORIE_CEN
+--------------------------------------------------------
+
+  CREATE TABLE "INZYNIERKA"."HISTORIE_CEN" 
+   (	"CENA" NUMBER(8,0), 
+	"ID_MARKI" NUMBER(6,0), 
+	"NUMER_RUNDY" NUMBER(5,0)
+   ) SEGMENT CREATION IMMEDIATE 
+  PCTFREE 10 PCTUSED 40 INITRANS 1 MAXTRANS 255 NOCOMPRESS LOGGING
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Table JAKOSCI_MAREK
+--------------------------------------------------------
+
+  CREATE TABLE "INZYNIERKA"."JAKOSCI_MAREK" 
+   (	"JAKOSC_MARKI" NUMBER(2,0), 
+	"REF_KOSZT_PRODUKCJI_SZTUKI" NUMBER(8,0)
+   ) SEGMENT CREATION IMMEDIATE 
+  PCTFREE 10 PCTUSED 40 INITRANS 1 MAXTRANS 255 NOCOMPRESS LOGGING
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Table KONSUMENCI
+--------------------------------------------------------
+
+  CREATE TABLE "INZYNIERKA"."KONSUMENCI" 
+   (	"ID_KONSUMENTA" NUMBER(10,0), 
+	"CENA_POZIOM_ASPIRACJI" NUMBER(5,0), 
+	"CENA_POZIOM_REZERWACJI" NUMBER(5,0), 
+	"JAKOSC_POZIOM_ASPIRACJI" NUMBER(2,0), 
+	"JAKOSC_POZIOM_REZERWACJI" NUMBER(2,0), 
+	"PRZYWIAZANIE_POZIOM_ASPIRACJI" NUMBER(4,2), 
+	"PRZYWIAZANIE_POZIOM_REZERWACJI" NUMBER(4,2), 
+	"PODATNOSC_NA_MARKETING" NUMBER(2,2)
+   ) SEGMENT CREATION IMMEDIATE 
+  PCTFREE 10 PCTUSED 40 INITRANS 1 MAXTRANS 255 NOCOMPRESS LOGGING
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Table MAGAZYNOWANIA
+--------------------------------------------------------
+
+  CREATE TABLE "INZYNIERKA"."MAGAZYNOWANIA" 
+   (	"WOLUMEN" NUMBER(8,0), 
+	"KOSZT_MAGAZYNOWANIA" NUMBER(12,0), 
+	"NUMER_RUNDY" NUMBER(5,0), 
+	"ID_MARKI" NUMBER(6,0)
+   ) SEGMENT CREATION IMMEDIATE 
+  PCTFREE 10 PCTUSED 40 INITRANS 1 MAXTRANS 255 NOCOMPRESS LOGGING
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Table MARKETINGI
+--------------------------------------------------------
+
+  CREATE TABLE "INZYNIERKA"."MARKETINGI" 
+   (	"ID_MARKETINGU" NUMBER(12,0), 
+	"NUMER_RUNDY" NUMBER(5,0), 
+	"ID_RODZAJU_MARKETINGU" NUMBER(2,0), 
+	"LICZBA_KLIENTOW" NUMBER(10,0), 
+	"KOSZT_MARKETINGU" NUMBER(12,0), 
+	"ID_MARKI" NUMBER(6,0)
+   ) SEGMENT CREATION IMMEDIATE 
+  PCTFREE 10 PCTUSED 40 INITRANS 1 MAXTRANS 255 NOCOMPRESS LOGGING
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Table MARKI
+--------------------------------------------------------
+
+  CREATE TABLE "INZYNIERKA"."MARKI" 
+   (	"ID_MARKI" NUMBER(6,0), 
+	"ID_PRODUCENTA" NUMBER(3,0), 
+	"NAZWA_MARKI" VARCHAR2(20 CHAR), 
+	"JAKOSC_MARKI" NUMBER(2,0), 
+	"KOSZT_PRODUKCJI_SZTUKI" NUMBER(8,0), 
+	"CENA_ZA_SZTUKE" NUMBER(8,0), 
+	"CZY_UTWORZONA" CHAR(1 CHAR) DEFAULT 'n', 
+	"AKTUALNA_LICZBA_SZTUK" NUMBER(15,0) DEFAULT 0, 
+	"TYMCZASOWA_OCENA_KLIENTA" NUMBER(15,10) DEFAULT 0
+   ) SEGMENT CREATION IMMEDIATE 
+  PCTFREE 10 PCTUSED 40 INITRANS 1 MAXTRANS 255 NOCOMPRESS LOGGING
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+
+   COMMENT ON COLUMN "INZYNIERKA"."MARKI"."CZY_UTWORZONA" IS '''t'' - tak
+''n'' - nie';
+--------------------------------------------------------
+--  DDL for Table NUMERY_RUND
+--------------------------------------------------------
+
+  CREATE TABLE "INZYNIERKA"."NUMERY_RUND" 
+   (	"NUMER_RUNDY" NUMBER(5,0)
+   ) SEGMENT CREATION IMMEDIATE 
+  PCTFREE 10 PCTUSED 40 INITRANS 1 MAXTRANS 255 NOCOMPRESS LOGGING
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Table OCENY_MAREK
+--------------------------------------------------------
+
+  CREATE TABLE "INZYNIERKA"."OCENY_MAREK" 
+   (	"ID_KONSUMENTA" NUMBER(10,0), 
+	"ID_BADANIA_RYNKU" NUMBER(6,0), 
+	"OCENA" NUMBER(8,4)
+   ) SEGMENT CREATION IMMEDIATE 
+  PCTFREE 10 PCTUSED 40 INITRANS 1 MAXTRANS 255 NOCOMPRESS LOGGING
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Table PRODUCENCI
+--------------------------------------------------------
+
+  CREATE TABLE "INZYNIERKA"."PRODUCENCI" 
+   (	"ID_PRODUCENTA" NUMBER(3,0), 
+	"NAZWA_PRODUCENTA" VARCHAR2(30 CHAR), 
+	"FUNDUSZE" NUMBER(14,0), 
+	"CZY_SPASOWAL" CHAR(1 CHAR) DEFAULT 'n'
+   ) SEGMENT CREATION IMMEDIATE 
+  PCTFREE 10 PCTUSED 40 INITRANS 1 MAXTRANS 255 NOCOMPRESS LOGGING
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+
+   COMMENT ON COLUMN "INZYNIERKA"."PRODUCENCI"."CZY_SPASOWAL" IS '''n'' - NIE
+''t'' - TAK';
+--------------------------------------------------------
+--  DDL for Table PRODUKCJE
+--------------------------------------------------------
+
+  CREATE TABLE "INZYNIERKA"."PRODUKCJE" 
+   (	"ID_PRODUKCJI" NUMBER(12,0), 
+	"WOLUMEN" NUMBER(10,0), 
+	"KOSZT_PRODUKCJI" NUMBER(12,0), 
+	"NUMER_RUNDY" NUMBER(5,0), 
+	"ID_MARKI" NUMBER(6,0)
+   ) SEGMENT CREATION IMMEDIATE 
+  PCTFREE 10 PCTUSED 40 INITRANS 1 MAXTRANS 255 NOCOMPRESS LOGGING
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Table PRZYNALEZNOSCI_DO_GRUP
+--------------------------------------------------------
+
+  CREATE TABLE "INZYNIERKA"."PRZYNALEZNOSCI_DO_GRUP" 
+   (	"ID_KONSUMENTA" NUMBER(10,0), 
+	"ID_GRUPY_KONSUMENTOW" NUMBER(5,0)
+   ) SEGMENT CREATION IMMEDIATE 
+  PCTFREE 10 PCTUSED 40 INITRANS 1 MAXTRANS 255 NOCOMPRESS LOGGING
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Table PRZYWIAZANIA_DO_MAREK
+--------------------------------------------------------
+
+  CREATE TABLE "INZYNIERKA"."PRZYWIAZANIA_DO_MAREK" 
+   (	"ID_KONSUMENTA" NUMBER(10,0), 
+	"WSPOLCZYNNIK_PRZYWIAZANIA" NUMBER(4,2), 
+	"ID_MARKI" NUMBER(6,0)
+   ) SEGMENT CREATION IMMEDIATE 
+  PCTFREE 10 PCTUSED 40 INITRANS 1 MAXTRANS 255 NOCOMPRESS LOGGING
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Table RODZAJE_MARKETINGU
+--------------------------------------------------------
+
+  CREATE TABLE "INZYNIERKA"."RODZAJE_MARKETINGU" 
+   (	"ID_RODZAJU_MARKETINGU" NUMBER(2,0), 
+	"KOSZT_BAZOWY" NUMBER(15,0), 
+	"KOSZTA_PER_KLIENT" NUMBER(15,0), 
+	"WPLYW_NA_DOCELOWA_MARKE" NUMBER(5,3), 
+	"WPLYW_NA_INNE_MARKI_PROD" NUMBER(5,3)
+   ) SEGMENT CREATION IMMEDIATE 
+  PCTFREE 10 PCTUSED 40 INITRANS 1 MAXTRANS 255 NOCOMPRESS LOGGING
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Table USTAWIENIA_POCZATKOWE
+--------------------------------------------------------
+
+  CREATE TABLE "INZYNIERKA"."USTAWIENIA_POCZATKOWE" 
+   (	"NUMER_ZESTAWU" NUMBER(2,0), 
+	"AKTYWNA" CHAR(1 CHAR) DEFAULT 'n', 
+	"WARUNEK_ZAKONCZENIA_RUNDY" CHAR(1 CHAR), 
+	"CZAS_RUNDY" NUMBER(4,0), 
+	"LICZBA_RUND" NUMBER(5,0), 
+	"POCZATKOWE_FUNDUSZE" NUMBER(8,0), 
+	"KOSZT_UTWORZENIA_MARKI" NUMBER(8,0), 
+	"ZAKUP_WPLYW_NA_DOCELOWA_MARKE" NUMBER(5,3), 
+	"ZAKUP_WPLYW_NA_INNE_MARKI_PRO" NUMBER(5,3), 
+	"BRAK_ZAKUPU_WPLYW_NA_MARKE" NUMBER(5,3), 
+	"NIEZASPOKOJONY_POPYT_WPLYW" NUMBER(5,3), 
+	"LICZBA_KONSUMENTOW" NUMBER(10,0), 
+	"WYM_MAX_CENA" NUMBER(10,0), 
+	"WYM_MIN_CENA" NUMBER(10,0), 
+	"WYM_KONS_MAX_ROZNICA_CENA" NUMBER(10,0), 
+	"WYM_KONS_MIN_ROZNICA_CENA" NUMBER(10,0), 
+	"WYM_KONS_MAX_ROZNICA_JAKOSC" NUMBER(2,0), 
+	"WYM_KONS_MIN_ROZNICA_JAKOSC" NUMBER(2,0), 
+	"WYM_KONS_MAX_ROZNICA_PRZYW" NUMBER(4,2), 
+	"WYM_KONS_MIN_ROZNICA_PRZYW" NUMBER(4,2), 
+	"SPOSOB_NALICZ_KOSZT_MAGAZYN" CHAR(1 CHAR) DEFAULT 'm', 
+	"WIELKOSC_POWIERZCHNI_MAG" NUMBER(12,0), 
+	"KOSZT_MAG_SZTUKI_LUB_MAGAZYNU" NUMBER(15,0), 
+	"UPUST_ZA_KOLEJNY_MAGAZYN" NUMBER(2,0), 
+	"CZY_JAKOSCI_MAREK_DOMYSLNE" CHAR(1 CHAR), 
+	"OPIS" VARCHAR2(200 CHAR)
+   ) SEGMENT CREATION IMMEDIATE 
+  PCTFREE 10 PCTUSED 40 INITRANS 1 MAXTRANS 255 NOCOMPRESS LOGGING
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+
+   COMMENT ON COLUMN "INZYNIERKA"."USTAWIENIA_POCZATKOWE"."AKTYWNA" IS '''a'' - aktywna. Ustawiona flaga aktywnosci oznacza, ze z tego zestawu beda pobierane ustawienia na rzecz rozgrywki; tylko jednen zestaw ustawien poczatkowych moze miec ustawiona te flage. Jesli nie ma zaden, wowczas gra pobiera dane z pierwszego zestawu';
+   COMMENT ON COLUMN "INZYNIERKA"."USTAWIENIA_POCZATKOWE"."WARUNEK_ZAKONCZENIA_RUNDY" IS '''t'' - upłynął określony czas
+''m'' - wszyscy gracz wykonali ruch
+''b'' - upłynął określony czas lub wszyscy gracze wykonali ruch ';
+   COMMENT ON COLUMN "INZYNIERKA"."USTAWIENIA_POCZATKOWE"."CZAS_RUNDY" IS 'Czas w godzinach. Jeśli jest wybrana opcja, w której warunkiem zakończenia rundy jest ruch wszystkich graczy, wówczas czas nie jest brany pod uwagę.';
+   COMMENT ON COLUMN "INZYNIERKA"."USTAWIENIA_POCZATKOWE"."ZAKUP_WPLYW_NA_DOCELOWA_MARKE" IS 'Okresla jaki wplyw ma zakup produktu danej marki na wspolczynnik przywiazania konsumenta do tej marki.';
+   COMMENT ON COLUMN "INZYNIERKA"."USTAWIENIA_POCZATKOWE"."ZAKUP_WPLYW_NA_INNE_MARKI_PRO" IS 'Okresla jaki wplyw ma zakup produktu danej marki na wspolczynnik przywazania konsumenta do innych marek nalezacych do producenta zakupionej marki.';
+   COMMENT ON COLUMN "INZYNIERKA"."USTAWIENIA_POCZATKOWE"."BRAK_ZAKUPU_WPLYW_NA_MARKE" IS 'Okresla jaki wplyw ma niezakupinie produktu danej marki nawspolczynnik przywazania konsumenta do tej marki.';
+   COMMENT ON COLUMN "INZYNIERKA"."USTAWIENIA_POCZATKOWE"."NIEZASPOKOJONY_POPYT_WPLYW" IS 'Okresla jaki wplyw na wspolczynnik przywiazania konsumenta do danej marki ma niezaspokojenie popytu przez producenta, tzn sytuacja w ktorej konsument decyduje sie na zakup produktu, ale nie moze go nabyc.';
+   COMMENT ON COLUMN "INZYNIERKA"."USTAWIENIA_POCZATKOWE"."WYM_MAX_CENA" IS 'Wymagania konsumenta - maksymalna wartosc poziomu rezerwacji konsumenta w kryterium ceny.';
+   COMMENT ON COLUMN "INZYNIERKA"."USTAWIENIA_POCZATKOWE"."WYM_MIN_CENA" IS 'Wymagania konsumenta - mnimalna wartosc poziomu aspiracji konsumenta w kryterium ceny.';
+   COMMENT ON COLUMN "INZYNIERKA"."USTAWIENIA_POCZATKOWE"."WYM_KONS_MAX_ROZNICA_CENA" IS 'Wymagania konsumenta - mozliwa maksymalna roznica miedzy poziomem rezerwacji a poziomiem aspiracji konsumenta w kryterium ceny.';
+   COMMENT ON COLUMN "INZYNIERKA"."USTAWIENIA_POCZATKOWE"."WYM_KONS_MIN_ROZNICA_CENA" IS 'Wymagania konsumenta - mozliwa minimalna roznica miedzy poziomem rezerwacji a poziomiem aspiracji konsumenta w kryterium ceny.';
+   COMMENT ON COLUMN "INZYNIERKA"."USTAWIENIA_POCZATKOWE"."WYM_KONS_MAX_ROZNICA_JAKOSC" IS 'Wymagania konsumenta - mozliwa maksymalna roznica miedzy poziomem aspiracji a poziomiem rezerwacji konsumenta w kryterium jakosci.';
+   COMMENT ON COLUMN "INZYNIERKA"."USTAWIENIA_POCZATKOWE"."WYM_KONS_MIN_ROZNICA_JAKOSC" IS 'Wymagania konsumenta - mozliwa minimalna roznica miedzy poziomem aspiracji a poziomiem rezerwacji konsumenta w kryterium jakosci.';
+   COMMENT ON COLUMN "INZYNIERKA"."USTAWIENIA_POCZATKOWE"."WYM_KONS_MAX_ROZNICA_PRZYW" IS 'Wymagania konsumenta - mozliwa maksymalna roznica miedzy poziomem aspiracji a poziomiem rezerwacji konsumenta w kryterium przywiazania do marki.';
+   COMMENT ON COLUMN "INZYNIERKA"."USTAWIENIA_POCZATKOWE"."WYM_KONS_MIN_ROZNICA_PRZYW" IS 'Wymagania konsumenta - mozliwa minimalna roznica miedzy poziomem aspiracji a poziomiem rezerwacji konsumenta w kryterium przywiazania do marki.';
+   COMMENT ON COLUMN "INZYNIERKA"."USTAWIENIA_POCZATKOWE"."SPOSOB_NALICZ_KOSZT_MAGAZYN" IS '''l'' - liniowy
+''m'' - producent placi za magazyn o okreslonej wielkosci, niezaleznie od stopnia zapelnienia';
+   COMMENT ON COLUMN "INZYNIERKA"."USTAWIENIA_POCZATKOWE"."WIELKOSC_POWIERZCHNI_MAG" IS 'Określa wielkosc powierzchni magazynowej, czyli ile maksymalnie sztuk towaru zmiesci sie na powierzchni magazynowej.';
+   COMMENT ON COLUMN "INZYNIERKA"."USTAWIENIA_POCZATKOWE"."KOSZT_MAG_SZTUKI_LUB_MAGAZYNU" IS 'Koszt zmagazynowania jednej sztuki (jesli obowiazuje liniowe naliczanie oplat) lub calego przedzialu (jesli obowiazuje naliczanie oplat zwiazane z powierzchnia magazynowa).';
+   COMMENT ON COLUMN "INZYNIERKA"."USTAWIENIA_POCZATKOWE"."UPUST_ZA_KOLEJNY_MAGAZYN" IS 'Jaki upust (w %) dostanie gracz za kazda kolejna (poza pierwsza) wykorzystana przestrzenia magazynowa.';
+   COMMENT ON COLUMN "INZYNIERKA"."USTAWIENIA_POCZATKOWE"."CZY_JAKOSCI_MAREK_DOMYSLNE" IS '''t'' - TAK
+''n'' - NIE';
+--------------------------------------------------------
+--  DDL for Table ZAKUPY_KONSUMENTOW
+--------------------------------------------------------
+
+  CREATE TABLE "INZYNIERKA"."ZAKUPY_KONSUMENTOW" 
+   (	"NUMER_RUNDY" NUMBER(5,0), 
+	"ID_KONSUMENTA" NUMBER(10,0), 
+	"ID_MARKI" NUMBER(6,0)
+   ) SEGMENT CREATION IMMEDIATE 
+  PCTFREE 10 PCTUSED 40 INITRANS 1 MAXTRANS 255 NOCOMPRESS LOGGING
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for View BADANIA_RYNKU_P
+--------------------------------------------------------
+
+  CREATE OR REPLACE FORCE VIEW "INZYNIERKA"."BADANIA_RYNKU_P" ("ID_BADANIA_RYNKU", "NAZWA_MARKI", "ID_GRUPY_KONSUMENTOW", "NUMER_RUNDY", "HIS_ZAKUPOW_LICZBA_RUND", "KOSZT_BADANIA_RYNKU", "UWZGLEDNIC_JAKOSC", "UWZGLEDNIC_CENE", "UWZGLEDNIC_STOSUNEK_DO_MARKI", "UWZG_STOSUNEK_DO_PRODUCENTA") AS 
+  SELECT
+    b.ID_BADANIA_RYNKU,
+    m.nazwa_marki,
+    b.ID_GRUPY_KONSUMENTOW,
+    b.numer_rundy,
+    b.HIS_ZAKUPOW_LICZBA_RUND,
+    TO_CHAR(b.KOSZT_BADANIA_RYNKU/100, '99999999999990.99') AS KOSZT_BADANIA_RYNKU,
+    b.UWZGLEDNIC_JAKOSC,
+    b.UWZGLEDNIC_CENE,
+    b.UWZGLEDNIC_STOSUNEK_DO_MARKI,
+    b.UWZG_STOSUNEK_DO_PRODUCENTA
+FROM
+    BADANIA_RYNKU b, MARKI m, PRODUCENCI r
+WHERE
+    b.id_marki = m.id_marki
+    and m.id_producenta = r.id_producenta
+    and r.NAZWA_PRODUCENTA = sys_context(
+        'APEX$SESSION'
+        ,'APP_USER'
+    )
+;
+--------------------------------------------------------
+--  DDL for View DOSTEP_DO_HIS_ZAKUPOW_P
+--------------------------------------------------------
+
+  CREATE OR REPLACE FORCE VIEW "INZYNIERKA"."DOSTEP_DO_HIS_ZAKUPOW_P" ("ID_BADANIA_RYNKU", "NUMER_RUNDY", "ID_KONSUMENTA", "NAZWA_MARKI") AS 
+  SELECT
+    b.ID_BADANIA_RYNKU,
+    z.numer_rundy,
+    z.ID_KONSUMENTA,
+    m.nazwa_marki
+FROM
+    ZAKUPY_KONSUMENTOW z, DOSTEPY_PRODUCENTOW_HIS_ZAKUP d, BADANIA_RYNKU b, MARKI m, PRODUCENCI p
+WHERE
+    z.id_konsumenta = d.id_konsumenta and z.numer_rundy = d.numer_rundy
+    and d.id_badania_rynku = b.id_badania_rynku
+    and z.id_marki = m.id_marki
+    and m.id_producenta = p.id_producenta
+    and p.NAZWA_PRODUCENTA = sys_context(
+        'APEX$SESSION'
+        ,'APP_USER'
+    )
+;
+--------------------------------------------------------
+--  DDL for View HISTORIE_CEN_P
+--------------------------------------------------------
+
+  CREATE OR REPLACE FORCE VIEW "INZYNIERKA"."HISTORIE_CEN_P" ("NAZWA_MARKI", "NUMER_RUNDY", "CENA") AS 
+  SELECT
+    m.nazwa_marki,
+    c.numer_rundy,
+    TO_CHAR(c.cena/100, '99999999999990.99') AS cena
+FROM
+    historie_cen c, MARKI m, PRODUCENCI r
+WHERE
+    c.id_marki = m.id_marki
+    and m.id_producenta = r.id_producenta
+    and r.NAZWA_PRODUCENTA = sys_context(
+        'APEX$SESSION'
+        ,'APP_USER'
+    )
+;
+--------------------------------------------------------
+--  DDL for View MAGAZYNOWANIE_P
+--------------------------------------------------------
+
+  CREATE OR REPLACE FORCE VIEW "INZYNIERKA"."MAGAZYNOWANIE_P" ("NAZWA_MARKI", "NUMER_RUNDY", "WOLUMEN", "KOSZT_MAGAZYNOWANIA") AS 
+  SELECT
+    m.NAZWA_MARKI,
+    p.NUMER_RUNDY,
+    p.WOLUMEN, 
+    TO_CHAR(p.KOSZT_MAGAZYNOWANIA/100, '99999999999990.99') AS KOSZT_MAGAZYNOWANIA
+FROM
+    MAGAZYNOWANIA p, MARKI m, PRODUCENCI r
+WHERE
+    p.id_marki = m.id_marki
+    and m.id_producenta = r.id_producenta
+    and r.NAZWA_PRODUCENTA = sys_context(
+        'APEX$SESSION'
+        ,'APP_USER'
+    )
+;
+--------------------------------------------------------
+--  DDL for View MARKETING_P
+--------------------------------------------------------
+
+  CREATE OR REPLACE FORCE VIEW "INZYNIERKA"."MARKETING_P" ("ID_MARKETINGU", "NUMER_RUNDY", "NAZWA_MARKI", "ID_RODZAJU_MARKETINGU", "LICZBA_KLIENTOW", "KOSZT_MARKETINGU") AS 
+  SELECT
+    p.ID_MARKETINGU,
+    p.NUMER_RUNDY,
+    m.NAZWA_MARKI,
+    p.ID_RODZAJU_MARKETINGU,
+    p.LICZBA_KLIENTOW,
+    TO_CHAR(p.KOSZT_MARKETINGU/100, '99999999999990.99') AS KOSZT_MARKETINGU
+FROM
+    MARKETINGI p, MARKI m, PRODUCENCI r
+WHERE
+    p.id_marki = m.id_marki
+    and m.id_producenta = r.id_producenta
+    and r.NAZWA_PRODUCENTA = sys_context(
+        'APEX$SESSION'
+        ,'APP_USER'
+    )
+;
+--------------------------------------------------------
+--  DDL for View MARKI_NA_RYNKU_P
+--------------------------------------------------------
+
+  CREATE OR REPLACE FORCE VIEW "INZYNIERKA"."MARKI_NA_RYNKU_P" ("NAZWA_MARKI", "NAZWA_PRODUCENTA", "JAKOSC_MARKI", "CENA_ZA_SZTUKE") AS 
+  SELECT
+    m.nazwa_marki, p.nazwa_producenta, m.jakosc_marki, m.cena_za_sztuke
+from
+    marki m, producenci p
+where
+    m.id_producenta = p.id_producenta
+    and czy_utworzona = 't'
+;
+--------------------------------------------------------
+--  DDL for View MARKI_P
+--------------------------------------------------------
+
+  CREATE OR REPLACE FORCE VIEW "INZYNIERKA"."MARKI_P" ("ID_MARKI", "NAZWA_MARKI", "KOSZT_PRODUKCJI_SZTUKI", "CENA_ZA_SZTUKE", "JAKOSC_MARKI", "CZY_UTWORZONA", "AKTUALNA_LICZBA_SZTUK") AS 
+  SELECT 
+    m.ID_MARKI,
+    m.NAZWA_MARKI,
+    m.KOSZT_PRODUKCJI_SZTUKI,
+    m.CENA_ZA_SZTUKE,
+    m.JAKOSC_MARKI,
+    m.CZY_UTWORZONA,
+    m.AKTUALNA_LICZBA_SZTUK
+FROM
+    MARKI m, PRODUCENCI p
+WHERE
+    m.id_producenta = p.id_producenta
+    AND
+    p.NAZWA_PRODUCENTA = sys_context(
+        'APEX$SESSION'
+        ,'APP_USER'
+    )
+;
+--------------------------------------------------------
+--  DDL for View OCENY_MAREK_P
+--------------------------------------------------------
+
+  CREATE OR REPLACE FORCE VIEW "INZYNIERKA"."OCENY_MAREK_P" ("ID_BADANIA_RYNKU", "NAZWA_MARKI", "NUMER_RUNDY", "ID_KONSUMENTA", "UWZGLEDNIC_JAKOSC", "UWZGLEDNIC_CENE", "UWZGLEDNIC_STOSUNEK_DO_MARKI", "UWZG_STOSUNEK_DO_PRODUCENTA", "OCENA") AS 
+  SELECT
+    b.ID_BADANIA_RYNKU,
+    m.nazwa_marki,
+    b.numer_rundy,
+    o.ID_KONSUMENTA,
+    b.UWZGLEDNIC_JAKOSC,
+    b.UWZGLEDNIC_CENE,
+    b.UWZGLEDNIC_STOSUNEK_DO_MARKI,
+    b.UWZG_STOSUNEK_DO_PRODUCENTA,
+    o.ocena
+FROM
+    OCENY_MAREK o, BADANIA_RYNKU b, MARKI m, PRODUCENCI r
+WHERE
+    o.id_badania_rynku = b.id_badania_rynku
+    and b.id_marki = m.id_marki
+    and m.id_producenta = r.id_producenta
+    and r.NAZWA_PRODUCENTA = sys_context(
+        'APEX$SESSION'
+        ,'APP_USER'
+    )
+;
+--------------------------------------------------------
+--  DDL for View PRODUCENCI_P
+--------------------------------------------------------
+
+  CREATE OR REPLACE FORCE VIEW "INZYNIERKA"."PRODUCENCI_P" ("ID_PRODUCENTA", "NAZWA_PRODUCENTA", "FUNDUSZE", "CZY_SPASOWAL") AS 
+  SELECT
+    ID_PRODUCENTA,
+    NAZWA_PRODUCENTA,
+    TO_CHAR(FUNDUSZE/100, '99999999999990.99') AS FUNDUSZE,
+    CZY_SPASOWAL
+FROM
+    PRODUCENCI
+WHERE
+    NAZWA_PRODUCENTA = sys_context(
+        'APEX$SESSION'
+        ,'APP_USER'
+    )
+;
+--------------------------------------------------------
+--  DDL for View PRODUKCJE_P
+--------------------------------------------------------
+
+  CREATE OR REPLACE FORCE VIEW "INZYNIERKA"."PRODUKCJE_P" ("ID_PRODUKCJI", "NAZWA_MARKI", "NUMER_RUNDY", "WOLUMEN", "KOSZT_PRODUKCJI") AS 
+  SELECT
+    p.ID_PRODUKCJI,
+    m.NAZWA_MARKI,
+    p.NUMER_RUNDY,
+    p.WOLUMEN, 
+    TO_CHAR(p.KOSZT_PRODUKCJI/100, '99999999999990.99') AS KOSZT_PRODUKCJI
+FROM
+    PRODUKCJE p, MARKI m, PRODUCENCI r
+WHERE
+    p.id_marki = m.id_marki
+    and m.id_producenta = r.id_producenta
+    and r.NAZWA_PRODUCENTA = sys_context(
+        'APEX$SESSION'
+        ,'APP_USER'
+    )
+;
+--------------------------------------------------------
+--  DDL for View SPRZEDAZ_P
+--------------------------------------------------------
+
+  CREATE OR REPLACE FORCE VIEW "INZYNIERKA"."SPRZEDAZ_P" ("NUMER_RUNDY", "NAZWA_MARKI", "ID_PRODUCENTA", "WOLUMEN", "PRZYCHOD") AS 
+  SELECT
+    zak.numer_rundy, mar.NAZWA_MARKI, mar.id_producenta, zak.wolumen, zak.wolumen*ceny.cena as przychod
+from
+    (--zapytanie, ktore kazdej parze (marka, runda) przypisuje cene marki w danej rundzie
+    select m.id_marki, n.numer_rundy,
+        (select cena from 
+            (select cena from historie_cen
+            --where id_marki = m.id_marki and numer_rundy <= n.numer_rundy
+            order by numer_rundy desc)
+                where rownum <= 1) as cena
+    from  marki m, numery_rund n
+    order by id_marki, numer_rundy) ceny,
+    
+    (--zapytanie, ktore sumuje zakupy konsumentow
+    select id_marki, numer_rundy, count(id_marki) as wolumen
+    from  ZAKUPY_KONSUMENTOW
+    group by id_marki, numer_rundy) zak,
+    marki mar
+where
+    ceny.id_marki = zak.id_marki and ceny.numer_rundy = zak.numer_rundy
+    and mar.id_marki = zak.id_marki
+;
+--------------------------------------------------------
+--  DDL for View SPRZEDAZ_PRODUCENTOW_P
+--------------------------------------------------------
+
+  CREATE OR REPLACE FORCE VIEW "INZYNIERKA"."SPRZEDAZ_PRODUCENTOW_P" ("NUMER_RUNDY", "NAZWA_MARKI", "WOLUMEN", "PRZYCHOD") AS 
+  SELECT
+    s.NUMER_RUNDY, s.NAZWA_MARKI, s.wolumen, s.przychod
+FROM
+    SPRZEDAZ_P s, PRODUCENCI p
+WHERE
+    s.id_producenta = p.id_producenta
+    and p.NAZWA_PRODUCENTA = sys_context(
+        'APEX$SESSION'
+        ,'APP_USER'
+    )
+;
+--------------------------------------------------------
+--  DDL for View WARTOSCI_FUNKCJI_OSIAG_MPO_P
+--------------------------------------------------------
+
+  CREATE OR REPLACE FORCE VIEW "INZYNIERKA"."WARTOSCI_FUNKCJI_OSIAG_MPO_P" ("ID_KONSUMENTA", "ID_MARKI", "ID_PRODUCENTA", "CZY_UTWORZONA", "AKTUALNA_LICZBA_SZTUK", "CENA", "JAKOSC", "PRZYWIAZANIE_DO_MARKI", "PRZYWIAZANIE_DO_PRODUCENTA") AS 
+  SELECT 
+    p.ID_KONSUMENTA,
+    p.ID_MARKI,
+    w.id_producenta,
+    m.czy_utworzona,
+    m.aktualna_liczba_sztuk,
+    POLICZ_WYMIAR_MPO(k.CENA_POZIOM_ASPIRACJI, k.CENA_POZIOM_REZERWACJI, m.CENA_ZA_SZTUKE) AS CENA,
+    POLICZ_WYMIAR_MPO(k.JAKOSC_POZIOM_ASPIRACJI, k.JAKOSC_POZIOM_REZERWACJI, m.JAKOSC_MARKI) AS JAKOSC,
+    POLICZ_WYMIAR_MPO(k.PRZYWIAZANIE_POZIOM_ASPIRACJI, k.PRZYWIAZANIE_POZIOM_REZERWACJI, p.WSPOLCZYNNIK_PRZYWIAZANIA)
+                AS PRZYWIAZANIE_DO_MARKI,
+    POLICZ_WYMIAR_MPO(k.PRZYWIAZANIE_POZIOM_ASPIRACJI, k.PRZYWIAZANIE_POZIOM_REZERWACJI, w.PRZYW_DO_PROD)
+                AS PRZYWIAZANIE_DO_PRODUCENTA
+FROM 
+    (select id_producenta, avg(p.WSPOLCZYNNIK_PRZYWIAZANIA) as PRZYW_DO_PROD
+        from marki m, przywiazania_do_marek p
+        where m.id_marki = p.id_marki
+        group by id_producenta) w,
+    PRZYWIAZANIA_DO_MAREK p, MARKI m, konsumenci k
+WHERE
+    m.id_marki = p.id_marki
+    and k.id_konsumenta = p.id_konsumenta
+    and m.id_producenta = w.id_producenta
+;
+--------------------------------------------------------
+--  DDL for Index PRODUCENCI_PK
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "INZYNIERKA"."PRODUCENCI_PK" ON "INZYNIERKA"."PRODUCENCI" ("ID_PRODUCENTA") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Index OCENY_MAREK_B_RYN_FK_IDX
+--------------------------------------------------------
+
+  CREATE INDEX "INZYNIERKA"."OCENY_MAREK_B_RYN_FK_IDX" ON "INZYNIERKA"."OCENY_MAREK" ("ID_BADANIA_RYNKU") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Index HISTORIE_CEN_PK
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "INZYNIERKA"."HISTORIE_CEN_PK" ON "INZYNIERKA"."HISTORIE_CEN" ("ID_MARKI", "NUMER_RUNDY") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Index PRZYWIAZANIA_DO_MAREK_PK
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "INZYNIERKA"."PRZYWIAZANIA_DO_MAREK_PK" ON "INZYNIERKA"."PRZYWIAZANIA_DO_MAREK" ("ID_KONSUMENTA", "ID_MARKI") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Index JAKOSCI_MAREK_PK
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "INZYNIERKA"."JAKOSCI_MAREK_PK" ON "INZYNIERKA"."JAKOSCI_MAREK" ("JAKOSC_MARKI") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Index NUMERY_RUND_PK
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "INZYNIERKA"."NUMERY_RUND_PK" ON "INZYNIERKA"."NUMERY_RUND" ("NUMER_RUNDY") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Index HISTORIE_CEN_NR_RUND_FK_IDX
+--------------------------------------------------------
+
+  CREATE INDEX "INZYNIERKA"."HISTORIE_CEN_NR_RUND_FK_IDX" ON "INZYNIERKA"."HISTORIE_CEN" ("NUMER_RUNDY") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Index MAGAZYNOWANIA_PK
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "INZYNIERKA"."MAGAZYNOWANIA_PK" ON "INZYNIERKA"."MAGAZYNOWANIA" ("NUMER_RUNDY", "ID_MARKI") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Index OCENY_MAREK_PK
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "INZYNIERKA"."OCENY_MAREK_PK" ON "INZYNIERKA"."OCENY_MAREK" ("ID_KONSUMENTA", "ID_BADANIA_RYNKU") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Index MARKI_NAZWA_MARKI_UN
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "INZYNIERKA"."MARKI_NAZWA_MARKI_UN" ON "INZYNIERKA"."MARKI" ("NAZWA_MARKI") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Index PRZYNALEZNOSCI_DO_GRUP_PK
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "INZYNIERKA"."PRZYNALEZNOSCI_DO_GRUP_PK" ON "INZYNIERKA"."PRZYNALEZNOSCI_DO_GRUP" ("ID_KONSUMENTA", "ID_GRUPY_KONSUMENTOW") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Index RODZAJE_MARKETINGU_PK
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "INZYNIERKA"."RODZAJE_MARKETINGU_PK" ON "INZYNIERKA"."RODZAJE_MARKETINGU" ("ID_RODZAJU_MARKETINGU") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Index PRODUKCJE_NRY_RUND_FK_IDX
+--------------------------------------------------------
+
+  CREATE INDEX "INZYNIERKA"."PRODUKCJE_NRY_RUND_FK_IDX" ON "INZYNIERKA"."PRODUKCJE" ("NUMER_RUNDY") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Index ZAKUPY_KONS_NR_RUND_FK_IDX
+--------------------------------------------------------
+
+  CREATE INDEX "INZYNIERKA"."ZAKUPY_KONS_NR_RUND_FK_IDX" ON "INZYNIERKA"."ZAKUPY_KONSUMENTOW" ("NUMER_RUNDY") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Index MAGAZYNOWANIA_MARKI_FK_IDX
+--------------------------------------------------------
+
+  CREATE INDEX "INZYNIERKA"."MAGAZYNOWANIA_MARKI_FK_IDX" ON "INZYNIERKA"."MAGAZYNOWANIA" ("ID_MARKI") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Index MARKETINGI_RODZ_MAR_FK_IDX
+--------------------------------------------------------
+
+  CREATE INDEX "INZYNIERKA"."MARKETINGI_RODZ_MAR_FK_IDX" ON "INZYNIERKA"."MARKETINGI" ("ID_RODZAJU_MARKETINGU") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Index MARKETINGI_MARKI_FK_IDX
+--------------------------------------------------------
+
+  CREATE INDEX "INZYNIERKA"."MARKETINGI_MARKI_FK_IDX" ON "INZYNIERKA"."MARKETINGI" ("ID_MARKI") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Index PRZYN_DO_GR_GR_KONS_FK_IDX
+--------------------------------------------------------
+
+  CREATE INDEX "INZYNIERKA"."PRZYN_DO_GR_GR_KONS_FK_IDX" ON "INZYNIERKA"."PRZYNALEZNOSCI_DO_GRUP" ("ID_GRUPY_KONSUMENTOW") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Index USTAWIENIA_POCZATKOWE_PK
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "INZYNIERKA"."USTAWIENIA_POCZATKOWE_PK" ON "INZYNIERKA"."USTAWIENIA_POCZATKOWE" ("NUMER_ZESTAWU") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Index BADANIA_RYNKU_MARKI_FK_IDX
+--------------------------------------------------------
+
+  CREATE INDEX "INZYNIERKA"."BADANIA_RYNKU_MARKI_FK_IDX" ON "INZYNIERKA"."BADANIA_RYNKU" ("ID_MARKI") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Index MARKETINGI_NR_RUND_FK_IDX
+--------------------------------------------------------
+
+  CREATE INDEX "INZYNIERKA"."MARKETINGI_NR_RUND_FK_IDX" ON "INZYNIERKA"."MARKETINGI" ("NUMER_RUNDY") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Index DOST_HIS_ZAKUP_PK
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "INZYNIERKA"."DOST_HIS_ZAKUP_PK" ON "INZYNIERKA"."DOSTEPY_PRODUCENTOW_HIS_ZAKUP" ("ID_KONSUMENTA", "NUMER_RUNDY", "ID_BADANIA_RYNKU") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Index BADANIA_RYNKU_GR_KONS_FK_IDX
+--------------------------------------------------------
+
+  CREATE INDEX "INZYNIERKA"."BADANIA_RYNKU_GR_KONS_FK_IDX" ON "INZYNIERKA"."BADANIA_RYNKU" ("ID_GRUPY_KONSUMENTOW") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Index PRODUKCJE_MARKI_FK_IDX
+--------------------------------------------------------
+
+  CREATE INDEX "INZYNIERKA"."PRODUKCJE_MARKI_FK_IDX" ON "INZYNIERKA"."PRODUKCJE" ("ID_MARKI") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Index ZAKUPY_KONS_MARKI_FK_IDX
+--------------------------------------------------------
+
+  CREATE INDEX "INZYNIERKA"."ZAKUPY_KONS_MARKI_FK_IDX" ON "INZYNIERKA"."ZAKUPY_KONSUMENTOW" ("ID_MARKI") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Index MARKI_PK
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "INZYNIERKA"."MARKI_PK" ON "INZYNIERKA"."MARKI" ("ID_MARKI") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Index KONSUMENCI_PK
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "INZYNIERKA"."KONSUMENCI_PK" ON "INZYNIERKA"."KONSUMENCI" ("ID_KONSUMENTA") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Index PRZYW_DO_MAREK_MARKI_FK_IDX
+--------------------------------------------------------
+
+  CREATE INDEX "INZYNIERKA"."PRZYW_DO_MAREK_MARKI_FK_IDX" ON "INZYNIERKA"."PRZYWIAZANIA_DO_MAREK" ("ID_MARKI") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Index MARKI_PRODUCENCI_FK_IDX
+--------------------------------------------------------
+
+  CREATE INDEX "INZYNIERKA"."MARKI_PRODUCENCI_FK_IDX" ON "INZYNIERKA"."MARKI" ("ID_PRODUCENTA") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Index MARKI_JAKOSCI_MAREK_FK_IDX
+--------------------------------------------------------
+
+  CREATE INDEX "INZYNIERKA"."MARKI_JAKOSCI_MAREK_FK_IDX" ON "INZYNIERKA"."MARKI" ("JAKOSC_MARKI") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Index DOST_PROD_HIS_B_RYNKU_FK_IDX
+--------------------------------------------------------
+
+  CREATE INDEX "INZYNIERKA"."DOST_PROD_HIS_B_RYNKU_FK_IDX" ON "INZYNIERKA"."DOSTEPY_PRODUCENTOW_HIS_ZAKUP" ("ID_BADANIA_RYNKU") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Index BADANIA_RYNKU_NRY_RUND_FK_IDX
+--------------------------------------------------------
+
+  CREATE INDEX "INZYNIERKA"."BADANIA_RYNKU_NRY_RUND_FK_IDX" ON "INZYNIERKA"."BADANIA_RYNKU" ("NUMER_RUNDY") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Index ZAKUPY_KONSUMENTOW_PK
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "INZYNIERKA"."ZAKUPY_KONSUMENTOW_PK" ON "INZYNIERKA"."ZAKUPY_KONSUMENTOW" ("ID_KONSUMENTA", "NUMER_RUNDY") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Index BADANIA_RYNKU_PK
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "INZYNIERKA"."BADANIA_RYNKU_PK" ON "INZYNIERKA"."BADANIA_RYNKU" ("ID_BADANIA_RYNKU") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Index PRODUKCJE_PK
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "INZYNIERKA"."PRODUKCJE_PK" ON "INZYNIERKA"."PRODUKCJE" ("ID_PRODUKCJI") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Index MARKETINGI_PK
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "INZYNIERKA"."MARKETINGI_PK" ON "INZYNIERKA"."MARKETINGI" ("ID_MARKETINGU") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Index PRODUCENCI_NAZWA_PRODUCENTA_UN
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "INZYNIERKA"."PRODUCENCI_NAZWA_PRODUCENTA_UN" ON "INZYNIERKA"."PRODUCENCI" ("NAZWA_PRODUCENTA") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Index GRUPY_KONSUMENTOW_PK
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "INZYNIERKA"."GRUPY_KONSUMENTOW_PK" ON "INZYNIERKA"."GRUPY_KONSUMENTOW" ("ID_GRUPY_KONSUMENTOW") 
+  PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM" ;
+--------------------------------------------------------
+--  DDL for Trigger AUTOINKR_ID_GRUPY_KONSUMENTOW
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "INZYNIERKA"."AUTOINKR_ID_GRUPY_KONSUMENTOW" 
+BEFORE INSERT ON GRUPY_KONSUMENTOW
+for each row
+BEGIN
+    --autoinkrementacja id
+    SELECT ID_GRUPY_KONSUMENTOW_SEQ.NEXTVAL
+    INTO :NEW.ID_GRUPY_KONSUMENTOW
+    FROM DUAL;
+END;
+
+/
+ALTER TRIGGER "INZYNIERKA"."AUTOINKR_ID_GRUPY_KONSUMENTOW" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger AUTOINKR_LICZNIKA_RUND
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "INZYNIERKA"."AUTOINKR_LICZNIKA_RUND" 
+BEFORE INSERT ON NUMERY_RUND
+FOR EACH ROW
+BEGIN
+    if :new.numer_rundy is null then
+        SELECT max(numer_rundy)+1
+        INTO :NEW.NUMER_RUNDY
+        FROM NUMERY_RUND;
+    end if;
+END;
+
+/
+ALTER TRIGGER "INZYNIERKA"."AUTOINKR_LICZNIKA_RUND" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger DZIALANIE_BADANIA_RYNKU
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "INZYNIERKA"."DZIALANIE_BADANIA_RYNKU" 
+AFTER INSERT ON BADANIA_RYNKU
+FOR EACH ROW
+DECLARE
+    id_prod NUMBER (3, 0);
+BEGIN
+    OCEN_MARKE(:new.ID_BADANIA_RYNKU, :new.ID_MARKI, :new.ID_GRUPY_KONSUMENTOW, :new.HIS_ZAKUPOW_LICZBA_RUND,
+                :new.UWZGLEDNIC_JAKOSC, :new.UWZGLEDNIC_CENE, :new.UWZGLEDNIC_STOSUNEK_DO_MARKI,
+                :new.UWZG_STOSUNEK_DO_PRODUCENTA);
+
+    --okreslenie id producenta
+    select id_producenta into id_prod from marki where id_marki = :new.id_marki;
+
+    --potracenie kosztow
+    update producenci set FUNDUSZE = FUNDUSZE - :new.koszt_badania_rynku where ID_PRODUCENTA = id_prod;
+END;
+
+/
+ALTER TRIGGER "INZYNIERKA"."DZIALANIE_BADANIA_RYNKU" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger DZIALANIE_MARKETINGU
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "INZYNIERKA"."DZIALANIE_MARKETINGU" 
+AFTER INSERT ON MARKETINGI
+FOR EACH ROW
+DECLARE
+id_prod NUMBER (3, 0);
+wspolczynnik_modyfikacji NUMBER (5,3);
+BEGIN
+    --okreslenie id producenta
+    select id_producenta into id_prod from marki where id_marki = :new.id_marki;
+
+    --potracenie kosztow
+    update producenci set FUNDUSZE = FUNDUSZE - :new.koszt_marketingu where ID_PRODUCENTA = id_prod;
+
+    --modyfikacja wspolczynnikow przywiazania konsumentow do marek
+    FOR REC IN (select id_konsumenta from konsumenci)
+    LOOP
+        select wplyw_na_docelowa_marke into wspolczynnik_modyfikacji from rodzaje_marketingu where ID_RODZAJU_MARKETINGU = :new.ID_RODZAJU_MARKETINGU;
+        update przywiazania_do_marek set wspolczynnik_przywiazania = wspolczynnik_przywiazania*wspolczynnik_modyfikacji
+            where id_marki = :new.id_marki and id_konsumenta = REC.id_konsumenta;
+
+        select wplyw_na_inne_marki_prod into wspolczynnik_modyfikacji from rodzaje_marketingu where ID_RODZAJU_MARKETINGU = :new.ID_RODZAJU_MARKETINGU;
+        for CUR IN (select m.id_marki from marki m, producenci p where p.id_producenta = m.id_producenta and p.id_producenta = id_prod)
+        loop
+            update przywiazania_do_marek set wspolczynnik_przywiazania = wspolczynnik_przywiazania*wspolczynnik_modyfikacji
+            where id_marki = CUR.id_marki and id_konsumenta = REC.id_konsumenta;
+        end loop;
+    end loop;
+END;
+
+/
+ALTER TRIGGER "INZYNIERKA"."DZIALANIE_MARKETINGU" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger FKNTM_BADANIA_RYNKU
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "INZYNIERKA"."FKNTM_BADANIA_RYNKU" BEFORE
+    UPDATE OF numer_rundy, id_marki, id_grupy_konsumentow ON badania_rynku
+BEGIN
+    raise_application_error(-20225, 'Non Transferable FK constraint  on table BADANIA_RYNKU is violated');
+END;
+
+/
+ALTER TRIGGER "INZYNIERKA"."FKNTM_BADANIA_RYNKU" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger FKNTM_DOSTEPY_PRODUCENTOW_HIS_
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "INZYNIERKA"."FKNTM_DOSTEPY_PRODUCENTOW_HIS_" BEFORE
+    UPDATE OF id_konsumenta, numer_rundy, id_badania_rynku ON dostepy_producentow_his_zakup
+BEGIN
+    raise_application_error(-20225, 'Non Transferable FK constraint  on table DOSTEPY_PRODUCENTOW_HIS_ZAKUP is violated');
+END;
+
+/
+ALTER TRIGGER "INZYNIERKA"."FKNTM_DOSTEPY_PRODUCENTOW_HIS_" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger FKNTM_HISTORIE_CEN
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "INZYNIERKA"."FKNTM_HISTORIE_CEN" BEFORE
+    UPDATE OF id_marki, numer_rundy ON historie_cen
+BEGIN
+    raise_application_error(-20225, 'Non Transferable FK constraint  on table HISTORIE_CEN is violated');
+END;
+
+/
+ALTER TRIGGER "INZYNIERKA"."FKNTM_HISTORIE_CEN" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger FKNTM_MAGAZYNOWANIA
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "INZYNIERKA"."FKNTM_MAGAZYNOWANIA" BEFORE
+    UPDATE OF numer_rundy, id_marki ON magazynowania
+BEGIN
+    raise_application_error(-20225, 'Non Transferable FK constraint  on table MAGAZYNOWANIA is violated');
+END;
+
+/
+ALTER TRIGGER "INZYNIERKA"."FKNTM_MAGAZYNOWANIA" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger FKNTM_MARKETINGI
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "INZYNIERKA"."FKNTM_MARKETINGI" BEFORE
+    UPDATE OF numer_rundy, id_rodzaju_marketingu, id_marki ON marketingi
+BEGIN
+    raise_application_error(-20225, 'Non Transferable FK constraint  on table MARKETINGI is violated');
+END;
+
+/
+ALTER TRIGGER "INZYNIERKA"."FKNTM_MARKETINGI" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger FKNTM_MARKI
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "INZYNIERKA"."FKNTM_MARKI" BEFORE
+    UPDATE OF id_producenta, jakosc_marki ON marki
+BEGIN
+    raise_application_error(-20225, 'Non Transferable FK constraint  on table MARKI is violated');
+END;
+
+/
+ALTER TRIGGER "INZYNIERKA"."FKNTM_MARKI" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger FKNTM_OCENY_MAREK
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "INZYNIERKA"."FKNTM_OCENY_MAREK" BEFORE
+    UPDATE OF id_konsumenta, id_badania_rynku ON oceny_marek
+BEGIN
+    raise_application_error(-20225, 'Non Transferable FK constraint  on table OCENY_MAREK is violated');
+END;
+
+/
+ALTER TRIGGER "INZYNIERKA"."FKNTM_OCENY_MAREK" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger FKNTM_PRODUKCJE
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "INZYNIERKA"."FKNTM_PRODUKCJE" BEFORE
+    UPDATE OF numer_rundy, id_marki ON produkcje
+BEGIN
+    raise_application_error(-20225, 'Non Transferable FK constraint  on table PRODUKCJE is violated');
+END;
+
+/
+ALTER TRIGGER "INZYNIERKA"."FKNTM_PRODUKCJE" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger FKNTM_PRZYNALEZNOSCI_DO_GRUP
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "INZYNIERKA"."FKNTM_PRZYNALEZNOSCI_DO_GRUP" BEFORE
+    UPDATE OF id_konsumenta, id_grupy_konsumentow ON przynaleznosci_do_grup
+BEGIN
+    raise_application_error(-20225, 'Non Transferable FK constraint  on table PRZYNALEZNOSCI_DO_GRUP is violated');
+END;
+
+/
+ALTER TRIGGER "INZYNIERKA"."FKNTM_PRZYNALEZNOSCI_DO_GRUP" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger FKNTM_PRZYWIAZANIA_DO_MAREK
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "INZYNIERKA"."FKNTM_PRZYWIAZANIA_DO_MAREK" BEFORE
+    UPDATE OF id_konsumenta, id_marki ON przywiazania_do_marek
+BEGIN
+    raise_application_error(-20225, 'Non Transferable FK constraint  on table PRZYWIAZANIA_DO_MAREK is violated');
+END;
+
+/
+ALTER TRIGGER "INZYNIERKA"."FKNTM_PRZYWIAZANIA_DO_MAREK" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger FKNTM_ZAKUPY_KONSUMENTOW
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "INZYNIERKA"."FKNTM_ZAKUPY_KONSUMENTOW" BEFORE
+    UPDATE OF id_marki, id_konsumenta, numer_rundy ON zakupy_konsumentow
+BEGIN
+    raise_application_error(-20225, 'Non Transferable FK constraint  on table ZAKUPY_KONSUMENTOW is violated');
+END;
+
+/
+ALTER TRIGGER "INZYNIERKA"."FKNTM_ZAKUPY_KONSUMENTOW" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger POTRAC_KOSZT_WPR_MAR_NA_RYNEK
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "INZYNIERKA"."POTRAC_KOSZT_WPR_MAR_NA_RYNEK" 
+AFTER UPDATE OF CZY_UTWORZONA ON MARKI
+FOR EACH ROW
+DECLARE
+    koszt NUMBER;
+BEGIN
+    if :new.CZY_UTWORZONA <> :old.CZY_UTWORZONA then
+        select koszt_utworzenia_marki into koszt from ustawienia_poczatkowe where aktywna = 'a';
+        update producenci set fundusze = fundusze - koszt where id_producenta = :old.id_producenta;
+    end if;
+END;
+
+/
+ALTER TRIGGER "INZYNIERKA"."POTRAC_KOSZT_WPR_MAR_NA_RYNEK" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger REALIZUJ_PRODUKCJE
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "INZYNIERKA"."REALIZUJ_PRODUKCJE" 
+AFTER INSERT ON PRODUKCJE
+for each row
+DECLARE
+producent number (3,0);
+BEGIN
+    select p.id_producenta into producent from producenci p, marki m where p.ID_PRODUCENTA = m.ID_PRODUCENTA AND m.ID_MARKI = :NEW.id_marki;
+    update producenci set FUNDUSZE = FUNDUSZE - :new.koszt_produkcji where ID_PRODUCENTA = producent;
+    --uaktualnienie liczby dostepnych sztuk
+    update marki set AKTUALNA_LICZBA_SZTUK = AKTUALNA_LICZBA_SZTUK + :new.WOLUMEN where ID_MARKI = :NEW.id_marki;
+END;
+
+/
+ALTER TRIGGER "INZYNIERKA"."REALIZUJ_PRODUKCJE" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger SPR_CZY_WSZYSCY_SPASOWALI
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "INZYNIERKA"."SPR_CZY_WSZYSCY_SPASOWALI" 
+AFTER UPDATE OF CZY_SPASOWAL ON PRODUCENCI
+FOR EACH ROW
+DECLARE
+    nie_spasowali number (2,0);
+BEGIN
+    if :new.czy_spasowal = 't' then
+        select count(id_producenta) into nie_spasowali from producenci where CZY_SPASOWAL = 'n';
+        if nie_spasowali = 0 then
+            rozpocznij_runde;
+        end if;
+    end if;
+END;
+/
+ALTER TRIGGER "INZYNIERKA"."SPR_CZY_WSZYSCY_SPASOWALI" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger SPR_MOZLIWOSC_BADANIA_RYNKU
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "INZYNIERKA"."SPR_MOZLIWOSC_BADANIA_RYNKU" 
+BEFORE INSERT ON BADANIA_RYNKU
+FOR EACH ROW
+DECLARE
+koszt NUMBER (15, 0);
+fundusze_producenta NUMBER;
+BEGIN
+    --wstawienie nr rundy
+    select max(numer_rundy) into :new.numer_rundy from NUMERY_RUND;
+
+    --sprawdzenie czy historia nie jest za dluga
+    if :new.numer_rundy - :new.HIS_ZAKUPOW_LICZBA_RUND < 1 or :new.HIS_ZAKUPOW_LICZBA_RUND > 6 then
+        raise_application_error(-20802, 'Proba uzyskania historii zakupow konsumentow ze zbyt wielu rund');
+    end if;
+
+    --obliczenie kosztu
+    select KOSZT_UZYSKANIA_OCEN into :new.koszt_badania_rynku from GRUPY_KONSUMENTOW where ID_GRUPY_KONSUMENTOW = :new.ID_GRUPY_KONSUMENTOW;
+    select KOSZT_HIS_ZAKUP_JEDNA_TURA into koszt from GRUPY_KONSUMENTOW where ID_GRUPY_KONSUMENTOW = :new.ID_GRUPY_KONSUMENTOW;
+    :new.koszt_badania_rynku := :new.koszt_badania_rynku + koszt * :new.HIS_ZAKUPOW_LICZBA_RUND;
+
+    select p.fundusze into fundusze_producenta from producenci p, marki m where m.id_producenta = p.id_producenta and m.id_marki = :new.id_marki;
+    if fundusze_producenta < :new.koszt_badania_rynku then
+        raise_application_error(-20801, 'Niewystarczajce fundusze');
+    end if;
+
+    --wstawienie id z sekwencji
+    SELECT ID_BADANIA_RYNKU_SEQ.NEXTVAL
+    INTO :NEW.ID_BADANIA_RYNKU
+    FROM DUAL;
+END;
+
+/
+ALTER TRIGGER "INZYNIERKA"."SPR_MOZLIWOSC_BADANIA_RYNKU" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger SPR_MOZLIWOSCI_PRODUKCJI
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "INZYNIERKA"."SPR_MOZLIWOSCI_PRODUKCJI" 
+BEFORE INSERT ON PRODUKCJE
+for each row
+DECLARE
+fund number;
+BEGIN
+    --autoinkrementacja id
+    SELECT ID_PRODUKCJI_SEQ.NEXTVAL
+    INTO :NEW.ID_PRODUKCJI
+    FROM DUAL;
+
+    --ustawienie kosztu i sprawdzenie czy producent ma fundusze
+    select p.fundusze into fund from producenci p, marki m where p.ID_PRODUCENTA = m.ID_PRODUCENTA AND m.ID_MARKI = :NEW.id_marki;
+    select KOSZT_PRODUKCJI_SZTUKI into :new.koszt_produkcji from marki where ID_MARKI = :NEW.id_marki;
+    :new.koszt_produkcji := :new.koszt_produkcji * :new.wolumen;
+    if fund < :new.koszt_produkcji then
+        raise_application_error(-20801, 'Niewystarczajce fundusze');
+    end if;
+
+    --dodanie numeru rundy
+    select max(numer_rundy) into :new.numer_rundy from numery_rund;
+END;
+
+/
+ALTER TRIGGER "INZYNIERKA"."SPR_MOZLIWOSCI_PRODUKCJI" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger SPR_MOZLIWOSC_MARKETINGU
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "INZYNIERKA"."SPR_MOZLIWOSC_MARKETINGU" 
+BEFORE INSERT ON MARKETINGI
+FOR EACH ROW
+DECLARE
+koszt NUMBER (15, 0);
+koszt_per_konsument NUMBER (15, 0);
+fundusze_producenta NUMBER;
+BEGIN  
+    --obliczenie kosztu
+    select KOSZT_BAZOWY into koszt from RODZAJE_MARKETINGU where ID_RODZAJU_MARKETINGU = :new.ID_RODZAJU_MARKETINGU;
+    select koszta_per_klient into koszt_per_konsument from RODZAJE_MARKETINGU where ID_RODZAJU_MARKETINGU = :new.ID_RODZAJU_MARKETINGU;
+    :new.koszt_marketingu := koszt + koszt_per_konsument * :new.liczba_klientow;
+
+    select p.fundusze into fundusze_producenta from producenci p, marki m where m.id_producenta = p.id_producenta and m.id_marki = :new.id_marki;
+    if fundusze_producenta < :new.koszt_marketingu then
+        raise_application_error(-20801, 'Niewystarczajce fundusze');
+    end if;
+
+    --wstawienie id z sekwencji
+    SELECT ID_MARKETINGU_SEQ.NEXTVAL
+    INTO :NEW.ID_MARKETINGU
+    FROM DUAL;
+
+    --wstawienie nr rundy
+    select max(numer_rundy) into :new.numer_rundy from NUMERY_RUND;
+END;
+
+/
+ALTER TRIGGER "INZYNIERKA"."SPR_MOZLIWOSC_MARKETINGU" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger SPR_WPROWADZ_MARKI_NA_RYNEK
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "INZYNIERKA"."SPR_WPROWADZ_MARKI_NA_RYNEK" 
+BEFORE UPDATE OF CZY_UTWORZONA ON MARKI
+FOR EACH ROW
+DECLARE
+    koszt NUMBER;
+    fundusze_producenta NUMBER;
+BEGIN
+    select koszt_utworzenia_marki into koszt from ustawienia_poczatkowe where aktywna = 'a';
+    select fundusze into fundusze_producenta from producenci where id_producenta = :old.id_producenta;
+
+    if fundusze_producenta < koszt then
+        raise_application_error(-20801, 'Niewystarczajce fundusze');
+    end if;
+END;
+
+/
+ALTER TRIGGER "INZYNIERKA"."SPR_WPROWADZ_MARKI_NA_RYNEK" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger STWORZ_MARKE
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "INZYNIERKA"."STWORZ_MARKE" 
+BEFORE INSERT ON MARKI
+FOR EACH ROW
+DECLARE
+    koszt_produkcji NUMBER;
+BEGIN
+  SELECT ID_MARKI_SEQ.NEXTVAL
+  INTO :NEW.ID_MARKI
+  FROM DUAL;
+
+  select ref_koszt_produkcji_sztuki into :new.koszt_produkcji_sztuki from JAKOSCI_MAREK where jakosc_marki = :new.jakosc_marki;
+END;
+
+/
+ALTER TRIGGER "INZYNIERKA"."STWORZ_MARKE" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger USTAL_WSPOL_PRZYW_DO_MARKI
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "INZYNIERKA"."USTAL_WSPOL_PRZYW_DO_MARKI" 
+AFTER INSERT ON MARKI
+FOR EACH ROW
+BEGIN
+    --ustalenie wspolczynnika przywiazania do marki dla kazdego z klientow
+    FOR REC IN (SELECT id_konsumenta from konsumenci)
+    LOOP
+        insert into PRZYWIAZANIA_DO_MAREK values (rec.id_konsumenta, 1.0, :new.id_marki);
+    END LOOP;
+END;
+
+/
+ALTER TRIGGER "INZYNIERKA"."USTAL_WSPOL_PRZYW_DO_MARKI" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger UZUPELNIANIE_HISTORII_CEN
+--------------------------------------------------------
+
+  CREATE OR REPLACE TRIGGER "INZYNIERKA"."UZUPELNIANIE_HISTORII_CEN" 
+AFTER INSERT OR UPDATE OF CENA_ZA_SZTUKE ON MARKI
+FOR EACH ROW
+DECLARE
+nr_rundy number (5,0);
+BEGIN
+    select max(numer_rundy) into nr_rundy from NUMERY_RUND;
+    BEGIN
+        insert into HISTORIE_CEN values (:new.cena_za_sztuke, :new.id_marki, nr_rundy);
+    EXCEPTION
+    --przechwycenie wyjatku naruszenia wiezow integralnosci
+    --taki blad moze sie pojawic w sytuacji gdy w danej rundzie cena zostala juz raz zmieniona,
+    --poniewaz kluczem glownym tabeli historia cen jest para numer_rundy oraz id_marki
+    --nie ma sensu tworzyc oddzielnego identyfikatora i zapamietywac wszystkich zmiany, poniewaz ostatecznie
+    --znaczenie ma tylko ostatnia zmiana ceny w danej rundzie, ta ktora bedzie wplywala na zakup konsumenta
+        WHEN DUP_VAL_ON_INDEX
+        THEN
+            UPDATE HISTORIE_CEN set cena = :new.cena_za_sztuke where id_marki = :new.id_marki and numer_rundy = nr_rundy;
+        END;
+END;
+
+/
+ALTER TRIGGER "INZYNIERKA"."UZUPELNIANIE_HISTORII_CEN" ENABLE;
+--------------------------------------------------------
+--  DDL for Procedure GENERUJ_GRUPY_KONSUMENTOW
+--------------------------------------------------------
+set define off;
+
+  CREATE OR REPLACE PROCEDURE "INZYNIERKA"."GENERUJ_GRUPY_KONSUMENTOW" 
+IS
+    liczebnosc_grupy NUMBER;
+    liczebnosc_konsumentow NUMBER;
+BEGIN
+    select liczba_konsumentow into liczebnosc_konsumentow from ustawienia_poczatkowe where aktywna = 'a';
+    liczebnosc_grupy := ceil(liczebnosc_konsumentow / 5);
+
+    insert into grupy_konsumentow values (null, liczebnosc_grupy*1000, liczebnosc_grupy*500, null);
+    for i in 1..liczebnosc_grupy loop
+        insert into PRZYNALEZNOSCI_DO_GRUP values (i, id_grupy_konsumentow_seq.CURRVAL);
+    end loop;
+
+    insert into grupy_konsumentow values (null, liczebnosc_grupy*1000, liczebnosc_grupy*550, null);
+    for i in liczebnosc_grupy+1..liczebnosc_grupy*2 loop
+        insert into PRZYNALEZNOSCI_DO_GRUP values (i, id_grupy_konsumentow_seq.CURRVAL);
+    end loop;
+
+    insert into grupy_konsumentow values (null, liczebnosc_grupy*1100, liczebnosc_grupy*650, null);
+    for i in liczebnosc_grupy*2+1..liczebnosc_grupy*3 loop
+        insert into PRZYNALEZNOSCI_DO_GRUP values (i, id_grupy_konsumentow_seq.CURRVAL);
+    end loop;
+
+    insert into grupy_konsumentow values (null, liczebnosc_grupy*1200, liczebnosc_grupy*850, null);
+    for i in liczebnosc_grupy*3+1..liczebnosc_grupy*4 loop
+        insert into PRZYNALEZNOSCI_DO_GRUP values (i, id_grupy_konsumentow_seq.CURRVAL);
+    end loop;
+
+    insert into grupy_konsumentow values (null, liczebnosc_grupy*1300, liczebnosc_grupy*1000, null);
+    for i in liczebnosc_grupy*4+1..liczebnosc_konsumentow loop
+        insert into PRZYNALEZNOSCI_DO_GRUP values (i, id_grupy_konsumentow_seq.CURRVAL);
+    end loop;
+    commit;
+END GENERUJ_GRUPY_KONSUMENTOW;
+
+/
+--------------------------------------------------------
+--  DDL for Procedure GENERUJ_KONSUMENTOW
+--------------------------------------------------------
+set define off;
+
+  CREATE OR REPLACE PROCEDURE "INZYNIERKA"."GENERUJ_KONSUMENTOW" 
+IS
+    liczba_kons number(10, 0);
+    cena_aspiracja number (5, 0);
+    jakosc_aspiracja number (2, 0);
+    przywiazanie_aspiracja number (4, 2); 
+BEGIN
+    select liczba_konsumentow into liczba_kons from ustawienia_poczatkowe where aktywna = 'a';
+    FOR i IN 1 ..liczba_kons LOOP
+        cena_aspiracja := DBMS_RANDOM.value(100, 4900);
+        jakosc_aspiracja := DBMS_RANDOM.value(3, 10);
+        przywiazanie_aspiracja := DBMS_RANDOM.value(1.03, 1.99);
+        insert into konsumenci values (i,
+                            cena_aspiracja, DBMS_RANDOM.value(cena_aspiracja + 10, 5000), --cena
+                            jakosc_aspiracja, DBMS_RANDOM.value(1, jakosc_aspiracja-1), --jakosc
+                            przywiazanie_aspiracja, DBMS_RANDOM.value(1.00, przywiazanie_aspiracja-0.2), --przywiazanie do marki
+                            DBMS_RANDOM.value(0.1, 0.99)); --podatnosc na marketing
+    END LOOP;
+END GENERUJ_KONSUMENTOW;
+
+/
+--------------------------------------------------------
+--  DDL for Procedure LICZ_PRZYCHOD
+--------------------------------------------------------
+set define off;
+
+  CREATE OR REPLACE PROCEDURE "INZYNIERKA"."LICZ_PRZYCHOD" AS
+aktualna_runda NUMBER;
+BEGIN
+    select max(numer_rundy) into aktualna_runda from numery_rund;
+    FOR i IN (select id_producenta, sum(przychod) as przychod from SPRZEDAZ_P where numer_rundy = aktualna_runda group by id_producenta)
+    LOOP
+        update producenci set fundusze = fundusze + i.przychod where id_producenta = i.id_producenta;
+    END LOOP;
+END LICZ_PRZYCHOD;
+
+/
+--------------------------------------------------------
+--  DDL for Procedure OCEN_MARKE
+--------------------------------------------------------
+set define off;
+
+  CREATE OR REPLACE PROCEDURE "INZYNIERKA"."OCEN_MARKE" (BADANIE_RYNKU NUMBER, MARKA NUMBER, GRUPA_KONSUMENTOW NUMBER, DLUGOSC_HIS_ZAKUPOW NUMBER,
+                                        UWZGLEDNIC_JAKOSC CHAR, UWZGLEDNIC_CENE CHAR, UWZGLEDNIC_STOSUNEK_DO_MARKI CHAR,
+                                        UWZG_STOSUNEK_DO_PRODUCENTA CHAR
+) AS
+    ocena_konsumenta NUMBER;
+    nr_rundy NUMBER;
+    czy_docelowa_marka_utworzona NUMBER;
+    liczba_wszystkich_marek NUMBER;
+BEGIN
+    select count(id_marki) into liczba_wszystkich_marek from marki where czy_utworzona = 't';
+    --badanie rynku odbywa sie jako porownanie pewnej marki (utworzonej lub nie) z pozostalymi markami dostepnymi na rynku, czyli utworzonymi
+    --jesli badana marka nie zostala jeszcze utworzona to liczebnosc zbioru analizowanych marek musi zostac zwiekszona o 1
+    select count(id_marki) into czy_docelowa_marka_utworzona from marki where czy_utworzona = 'n' and id_marki = marka;
+    liczba_wszystkich_marek := liczba_wszystkich_marek + czy_docelowa_marka_utworzona;
+
+    FOR REC IN ((
+    select id_konsumenta, sum(f_osiagniecia) as liczba_gorszych_marek from
+    (
+    select p.id_konsumenta, p.czy_utworzona, p.id_marki,
+            CASE WHEN POLICZ_MPO_WYBRANE_WYMIARY(
+                p.cena, UWZGLEDNIC_JAKOSC,
+                p.jakosc, UWZGLEDNIC_CENE,
+                p.przywiazanie_do_marki, UWZGLEDNIC_STOSUNEK_DO_MARKI,
+                p.przywiazanie_do_producenta, UWZG_STOSUNEK_DO_PRODUCENTA
+            ) < m.f_osiagniecia_oc_marki THEN 1 ELSE 0 END as f_osiagniecia
+            from
+
+        (
+        --obliczenie funkcji osiagniecia badanej marki w celu pozniejszego stworzenia zlaczenia z analizowanymi rekordami
+        select wart.id_konsumenta, przyn.id_grupy_konsumentow,
+            --wyznaczenie wartosc funkcji osiagniecia na podstawie wartosci funkcji osiagniecia kazdego z parametrow
+            --w zaleznosci od decyzji gracza
+            POLICZ_MPO_WYBRANE_WYMIARY(
+                wart.cena, UWZGLEDNIC_JAKOSC,
+                wart.jakosc, UWZGLEDNIC_CENE,
+                wart.przywiazanie_do_marki, UWZGLEDNIC_STOSUNEK_DO_MARKI,
+                wart.przywiazanie_do_producenta, UWZG_STOSUNEK_DO_PRODUCENTA
+            ) as f_osiagniecia_oc_marki
+        from WARTOSCI_FUNKCJI_OSIAG_MPO_P wart, przynaleznosci_do_grup przyn
+        where wart.id_konsumenta = przyn.id_konsumenta and przyn.id_grupy_konsumentow = GRUPA_KONSUMENTOW and id_marki = marka
+        ) m,
+
+        WARTOSCI_FUNKCJI_OSIAG_MPO_P p
+    where
+        p.ID_KONSUMENTA = m.id_konsumenta and p.czy_utworzona = 't'
+    )
+    group by id_konsumenta))
+    LOOP
+        --wpisanie oceny
+        ocena_konsumenta := round((rec.liczba_gorszych_marek/liczba_wszystkich_marek)*10, 0);
+        insert into oceny_marek values (rec.id_konsumenta, badanie_rynku, ocena_konsumenta);
+
+        --udostepnienie producentowi historii zakupow konsumenta
+        if DLUGOSC_HIS_ZAKUPOW > 0 then
+            select max(numer_rundy) into nr_rundy from numery_rund;
+            for i in 1..DLUGOSC_HIS_ZAKUPOW loop 
+                BEGIN
+                    insert into dostepy_producentow_his_zakup values (rec.id_konsumenta, nr_rundy - i, BADANIE_RYNKU);
+                EXCEPTION
+                --jesli gracz bedzie nierozwaznie planowal badanie rynku, to moze ponownie zakupic dostep do informacji o zakupie
+                --danego klienta w danej rundzie; pojawia sie wowczas blad naruszenia wiezow integralnosci, ktory nalezy zignorowac
+                    WHEN DUP_VAL_ON_INDEX
+                    THEN
+                        null;
+                END;
+            end loop;
+            --commit;
+        end if;
+    end loop;
+END OCEN_MARKE;
+
+/
+--------------------------------------------------------
+--  DDL for Procedure POTRAC_KOSZTY_MAGAZYNOWANIA
+--------------------------------------------------------
+set define off;
+
+  CREATE OR REPLACE PROCEDURE "INZYNIERKA"."POTRAC_KOSZTY_MAGAZYNOWANIA" AS 
+    koszt NUMBER (15, 0);
+    nr_rundy NUMBER (5, 0);
+    sposob_nalicz_kosztow CHAR(1);
+    koszt_mag_sztuki NUMBER (15, 0);
+    wielkosc_pow_mag NUMBER (12, 0);
+    upust_per_magazyn NUMBER (2, 0);
+    upust NUMBER;
+    liczba_magazynow NUMBER (6, 0);
+BEGIN
+    select max(numer_rundy) into nr_rundy from numery_rund;
+    select SPOSOB_NALICZ_KOSZT_MAGAZYN into sposob_nalicz_kosztow from USTAWIENIA_POCZATKOWE where aktywna = 'a';
+    select KOSZT_MAG_SZTUKI_LUB_MAGAZYNU into koszt_mag_sztuki from USTAWIENIA_POCZATKOWE where aktywna = 'a';
+
+    if sposob_nalicz_kosztow = 'l' then
+        FOR REC IN (SELECT m.id_marki, m.aktualna_liczba_sztuk, m.ID_PRODUCENTA from marki m where aktualna_liczba_sztuk > 0)
+        LOOP
+            --okreslenie kosztu magazyniwania
+            koszt := rec.aktualna_liczba_sztuk * koszt_mag_sztuki;
+            --obciazenie kosztami konta producenta
+            UPDATE producenci SET fundusze = fundusze - koszt WHERE ID_PRODUCENTA = REC.id_producenta;
+            --dodanie wpisu do tabeli historii magazynowania
+            insert into magazynowania values (rec.aktualna_liczba_sztuk, koszt, nr_rundy, rec.id_marki);
+        END LOOP;
+    else
+        select WIELKOSC_POWIERZCHNI_MAG into wielkosc_pow_mag from USTAWIENIA_POCZATKOWE where aktywna = 'a';
+        select UPUST_ZA_KOLEJNY_MAGAZYN into upust_per_magazyn from USTAWIENIA_POCZATKOWE where aktywna = 'a';
+
+        FOR REC IN (select sum(aktualna_liczba_sztuk) as liczba_sztuk, ID_PRODUCENTA from marki where aktualna_liczba_sztuk > 0 group by ID_PRODUCENTA)
+        LOOP
+            --okreslenie jaki upust przysluguje za liczbe wynajetych magazynow; ostateczny upust nie moze byc wiekszy niz 50%
+            liczba_magazynow := CEIL(rec.liczba_sztuk/wielkosc_pow_mag);
+            upust := liczba_magazynow*upust_per_magazyn;
+            if upust > 50 then
+                upust := 50;
+            end if;
+            --okreslenie kosztu magazynowania wszystkich marek producenta; symuluje to sytuacje napelniania magzynow produktami roznych marek
+            --liczenie kosztu oddzielnie dla kazdej marki oznaczaloby ze producent musi oddzielnie magazynowac produkty kazdej z marek i nie moze wykorzystac wolnej przestrzeni
+            --oplaconej w ramach magazynowania innej marki
+            koszt := CEIL(rec.liczba_sztuk/wielkosc_pow_mag) * koszt_mag_sztuki * (100-upust)/100;
+            --obciazenie kosztami konta producenta
+            UPDATE producenci SET fundusze = fundusze - koszt WHERE ID_PRODUCENTA = REC.ID_PRODUCENTA;
+            --dodanie wpisow do tabeli historii magazynowania
+            FOR MAR IN (select id_marki, aktualna_liczba_sztuk, ID_PRODUCENTA from marki where ID_PRODUCENTA = rec.ID_PRODUCENTA)
+            LOOP
+                insert into magazynowania values (mar.aktualna_liczba_sztuk, koszt*(mar.aktualna_liczba_sztuk/rec.liczba_sztuk), nr_rundy, mar.id_marki);
+            END LOOP;
+         END LOOP;
+    end if;
+END POTRAC_KOSZTY_MAGAZYNOWANIA;
+
+/
+--------------------------------------------------------
+--  DDL for Procedure RESTART_PARAMETROW_PRODUCENTOW
+--------------------------------------------------------
+set define off;
+
+  CREATE OR REPLACE PROCEDURE "INZYNIERKA"."RESTART_PARAMETROW_PRODUCENTOW" AS 
+    pocz_fundusze number (10, 0);
+BEGIN
+    select poczatkowe_fundusze into pocz_fundusze from ustawienia_poczatkowe where aktywna = 'a';
+    update PRODUCENCI set FUNDUSZE = pocz_fundusze, CZY_SPASOWAL = 'n';
+    commit;
+END RESTART_PARAMETROW_PRODUCENTOW;
+
+/
+--------------------------------------------------------
+--  DDL for Procedure RESTART_SEKWENCJI
+--------------------------------------------------------
+set define off;
+
+  CREATE OR REPLACE PROCEDURE "INZYNIERKA"."RESTART_SEKWENCJI" ( NAZWA_SEKWENCJI varchar2 ) AS
+    tmp number;
+BEGIN
+    execute immediate
+    'select ' || NAZWA_SEKWENCJI || '.nextval from dual' INTO tmp;
+
+    execute immediate
+    'alter sequence ' || NAZWA_SEKWENCJI || ' increment by -' || tmp || ' minvalue 0';
+
+    execute immediate
+    'select ' || NAZWA_SEKWENCJI || '.nextval from dual' INTO tmp;
+
+    execute immediate
+    'alter sequence ' || NAZWA_SEKWENCJI || ' increment by 1 minvalue 0';
+
+END RESTART_SEKWENCJI;
+
+/
+--------------------------------------------------------
+--  DDL for Procedure ROZPOCZNIJ_GRE
+--------------------------------------------------------
+set define off;
+
+  CREATE OR REPLACE PROCEDURE "INZYNIERKA"."ROZPOCZNIJ_GRE" AS
+    czy_wstawic_jakosci char(1);
+BEGIN
+    --sprawdzenie czy wybrana opcja istnieje
+    declare
+        aktywna_opcja number;
+    BEGIN
+        select count(numer_zestawu) into aktywna_opcja from USTAWIENIA_POCZATKOWE where aktywna = 'a';
+        if aktywna_opcja <> 1 then
+            raise_application_error(-20805, 'Brak aktywnego zestawu ustawien poczatkowych');
+        end if;
+    END;
+    --czyszczenie zawartosci po poprzedniej grze
+    WYCZYSC_TABELE;
+    --restartowanie sekwencji
+    ZRESTARTUJ_SEKWENCJE;
+    --wstawienie domyslnych wartosci jakosci marki wraz z referencyjnymi kosztami produkcji jesli taka opcja zostala wybrana w ustawieniach poczatkowych
+    select czy_jakosci_marek_domyslne into czy_wstawic_jakosci from ustawienia_poczatkowe where aktywna = 'a';
+    if czy_wstawic_jakosci = 't' then
+        DELETE FROM jakosci_marek CASCADE;
+        WSTAW_DOMYSLNE_JAKOSCI_MAREK;
+    end if;
+    --stworzenie konsumentow
+    GENERUJ_KONSUMENTOW;
+    --stworzenie bazowych grup konsumentow
+    GENERUJ_GRUPY_KONSUMENTOW;
+    --restartowanie parametrow producentow, czyli graczy
+    RESTART_PARAMETROW_PRODUCENTOW;
+    --rozpocznij pierwsza runde
+    insert into numery_rund values (1);
+    commit;
+END ROZPOCZNIJ_GRE;
+
+/
+--------------------------------------------------------
+--  DDL for Procedure ROZPOCZNIJ_RUNDE
+--------------------------------------------------------
+set define off;
+
+  CREATE OR REPLACE PROCEDURE "INZYNIERKA"."ROZPOCZNIJ_RUNDE" AS
+--procedura uruchamiana rozpoczyna nowa runde poprzez zwiekszenie licznika rund
+BEGIN
+  --przywrocenie producentom mozliwosci wykonywania dzialan
+  update producenci set czy_spasowal = 'n';
+
+  --realizacja zakupow klientow
+  ZREALIZUJ_ZAKUPY;
+
+  --przeliczanie i dodanie przychodu ze sprzedazy do kont producentow
+  LICZ_PRZYCHOD;
+
+  --koszty magazynowania na kolejna runde
+  POTRAC_KOSZTY_MAGAZYNOWANIA;
+
+  --zwiekszenie licznika rund - ! czy z sekwencja ma to sens
+  insert into numery_rund values (null);
+  --commit;
+END ROZPOCZNIJ_RUNDE;
+
+/
+--------------------------------------------------------
+--  DDL for Procedure WSTAW_DOMYSLNE_JAKOSCI_MAREK
+--------------------------------------------------------
+set define off;
+
+  CREATE OR REPLACE PROCEDURE "INZYNIERKA"."WSTAW_DOMYSLNE_JAKOSCI_MAREK" 
+IS
+BEGIN
+   insert into jakosci_marek values (1, 1000);
+   insert into jakosci_marek values (2, 1100);
+   insert into jakosci_marek values (3, 1200);
+   insert into jakosci_marek values (4, 1300);
+   insert into jakosci_marek values (5, 1400);
+   commit;
+END WSTAW_DOMYSLNE_JAKOSCI_MAREK;
+
+/
+--------------------------------------------------------
+--  DDL for Procedure WYCZYSC_TABELE
+--------------------------------------------------------
+set define off;
+
+  CREATE OR REPLACE PROCEDURE "INZYNIERKA"."WYCZYSC_TABELE" AS 
+BEGIN
+    /*
+    --czyszczenie
+    EXECUTE IMMEDIATE 'TRUNCATE TABLE dostepy_producentow_his_zakup';
+    EXECUTE IMMEDIATE 'TRUNCATE TABLE oceny_marek';
+    EXECUTE IMMEDIATE 'TRUNCATE TABLE historie_cen';
+    EXECUTE IMMEDIATE 'TRUNCATE TABLE magazynowania';
+    EXECUTE IMMEDIATE 'TRUNCATE TABLE produkcje';
+    EXECUTE IMMEDIATE 'TRUNCATE TABLE przywiazania_do_marek';
+    EXECUTE IMMEDIATE 'TRUNCATE TABLE marketingi';
+    EXECUTE IMMEDIATE 'TRUNCATE TABLE PRZYNALEZNOSCI_DO_GRUP';
+    
+    DELETE FROM GRUPY_KONSUMENTOW CASCADE;
+    DELETE FROM zakupy_konsumentow CASCADE;
+    DELETE FROM badania_rynku CASCADE;
+    DELETE FROM marki CASCADE;
+    DELETE FROM numery_rund CASCADE;
+    DELETE FROM konsumenci CASCADE;
+    commit;
+    */
+    EXECUTE IMMEDIATE 'TRUNCATE TABLE dostepy_producentow_his_zakup';
+    EXECUTE IMMEDIATE 'TRUNCATE TABLE oceny_marek';
+    EXECUTE IMMEDIATE 'TRUNCATE TABLE historie_cen';
+    EXECUTE IMMEDIATE 'TRUNCATE TABLE magazynowania';
+    EXECUTE IMMEDIATE 'TRUNCATE TABLE produkcje';
+    EXECUTE IMMEDIATE 'TRUNCATE TABLE przywiazania_do_marek';
+    EXECUTE IMMEDIATE 'TRUNCATE TABLE marketingi';
+    EXECUTE IMMEDIATE 'TRUNCATE TABLE PRZYNALEZNOSCI_DO_GRUP';
+    
+    EXECUTE IMMEDIATE 'alter table badania_rynku disable constraint BADANIA_RYNKU_GR_KONSUM_FK';
+    EXECUTE IMMEDIATE 'alter table przynaleznosci_do_grup disable constraint PRZYN_DO_GR_G_KONSUMENTOW_FK';
+    EXECUTE IMMEDIATE 'truncate table GRUPY_KONSUMENTOW';
+    EXECUTE IMMEDIATE 'alter table badania_rynku enable constraint BADANIA_RYNKU_GR_KONSUM_FK';
+    EXECUTE IMMEDIATE 'alter table przynaleznosci_do_grup enable constraint PRZYN_DO_GR_G_KONSUMENTOW_FK';
+    
+    EXECUTE IMMEDIATE 'alter table dostepy_producentow_his_zakup disable constraint DOST_HIS_ZAKUPY_KONSUM_FK';
+    EXECUTE IMMEDIATE 'truncate table zakupy_konsumentow';
+    EXECUTE IMMEDIATE 'alter table dostepy_producentow_his_zakup enable constraint DOST_HIS_ZAKUPY_KONSUM_FK';
+    
+    EXECUTE IMMEDIATE 'alter table oceny_marek disable constraint OCENY_MAREK_BADANIA_RYNKU_FK';
+    EXECUTE IMMEDIATE 'alter table dostepy_producentow_his_zakup disable constraint DOST_HIS_BADANIA_RYNKU_FK';
+    EXECUTE IMMEDIATE 'truncate table badania_rynku';
+    EXECUTE IMMEDIATE 'alter table oceny_marek enable constraint OCENY_MAREK_BADANIA_RYNKU_FK';
+    EXECUTE IMMEDIATE 'alter table dostepy_producentow_his_zakup enable constraint DOST_HIS_BADANIA_RYNKU_FK';
+    
+    EXECUTE IMMEDIATE 'alter table oceny_marek disable constraint OCENY_MAREK_KONSUMENCI_FK';
+    EXECUTE IMMEDIATE 'alter table zakupy_konsumentow disable constraint ZAKUPY_KONSUM_KONSUMENCI_FK';
+    EXECUTE IMMEDIATE 'alter table przynaleznosci_do_grup disable constraint PRZYN_DO_GR_KONSUMENCI_FK';
+    EXECUTE IMMEDIATE 'alter table przywiazania_do_marek disable constraint PRZYW_DO_MAREK_KONSUMENCI_FK';
+    EXECUTE IMMEDIATE 'truncate table konsumenci';
+    EXECUTE IMMEDIATE 'alter table oceny_marek enable constraint OCENY_MAREK_KONSUMENCI_FK';
+    EXECUTE IMMEDIATE 'alter table zakupy_konsumentow enable constraint ZAKUPY_KONSUM_KONSUMENCI_FK';
+    EXECUTE IMMEDIATE 'alter table przynaleznosci_do_grup enable constraint PRZYN_DO_GR_KONSUMENCI_FK';
+    EXECUTE IMMEDIATE 'alter table przywiazania_do_marek enable constraint PRZYW_DO_MAREK_KONSUMENCI_FK';
+    
+    DELETE FROM marki CASCADE;
+    DELETE FROM numery_rund CASCADE;
+
+END WYCZYSC_TABELE;
+
+/
+--------------------------------------------------------
+--  DDL for Procedure ZREALIZUJ_ZAKUPY
+--------------------------------------------------------
+set define off;
+
+  CREATE OR REPLACE PROCEDURE "INZYNIERKA"."ZREALIZUJ_ZAKUPY" AS
+    nr_rundy NUMBER;
+    wybrana_marka NUMBER;
+    wspolczynnik_modyfikacji NUMBER;
+    ZAKUP_WPLYW_NA_DOCELOWA_MARKE NUMBER;
+    ZAKUP_WPLYW_NA_INNE_MARKI_PRO NUMBER;
+    BRAK_ZAKUPU_WPLYW_NA_MARKE NUMBER;
+    NIEZASPOKOJONY_POPYT_WPLYW NUMBER;
+    flaga_zakupu CHAR(1) := 'n';
+BEGIN
+    select max(numer_rundy) into nr_rundy from numery_rund;
+    select
+        u.ZAKUP_WPLYW_NA_DOCELOWA_MARKE,
+        u.ZAKUP_WPLYW_NA_INNE_MARKI_PRO,
+        u.BRAK_ZAKUPU_WPLYW_NA_MARKE,
+        u.NIEZASPOKOJONY_POPYT_WPLYW
+    into
+        ZAKUP_WPLYW_NA_DOCELOWA_MARKE,
+        ZAKUP_WPLYW_NA_INNE_MARKI_PRO,
+        BRAK_ZAKUPU_WPLYW_NA_MARKE,
+        NIEZASPOKOJONY_POPYT_WPLYW 
+    from ustawienia_poczatkowe u where aktywna = 'a';
+
+
+    FOR REC IN ((SELECT id_konsumenta from konsumenci))
+    LOOP  
+        FOR MAR IN (SELECT id_konsumenta, id_producenta, id_marki, aktualna_liczba_sztuk, POLICZ_MPO_WYBRANE_WYMIARY(
+                cena, 't',
+                jakosc, 't',
+                przywiazanie_do_marki, 't',
+                przywiazanie_do_producenta, 't'
+            ) as f_osiagniecia_oc_marki from WARTOSCI_FUNKCJI_OSIAG_MPO_P
+            where id_konsumenta = rec.id_konsumenta and czy_utworzona = 't'
+            order by f_osiagniecia_oc_marki desc)
+        LOOP
+            if mar.aktualna_liczba_sztuk > 0 then
+                insert into zakupy_konsumentow values (nr_rundy, rec.id_konsumenta, mar.id_marki);
+                update marki set aktualna_liczba_sztuk = aktualna_liczba_sztuk - 1 where id_marki = mar.id_marki;
+                --zwiekszenie przywiazania konsumenta do marki wynikajace z zakupu produktu
+                update PRZYWIAZANIA_DO_MAREK set WSPOLCZYNNIK_PRZYWIAZANIA = WSPOLCZYNNIK_PRZYWIAZANIA*ZAKUP_WPLYW_NA_DOCELOWA_MARKE
+                    where ID_KONSUMENTA = rec.ID_KONSUMENTA and id_marki = mar.id_marki;
+                --zwiekszenie przywiazania konsumenta do innych marek producenta wynikajace z zakupu produktu
+                update PRZYWIAZANIA_DO_MAREK set WSPOLCZYNNIK_PRZYWIAZANIA = WSPOLCZYNNIK_PRZYWIAZANIA*ZAKUP_WPLYW_NA_INNE_MARKI_PRO
+                    where ID_KONSUMENTA = rec.ID_KONSUMENTA and id_marki IN (select id_marki from marki
+                                                                            where id_producenta = mar.id_producenta and id_marki != mar.id_marki);
+                --zminiejszenie przywiazania konsumenta do pozosytalych marek wynikajace z odzwyczajania/zapominania o marce
+                update PRZYWIAZANIA_DO_MAREK set WSPOLCZYNNIK_PRZYWIAZANIA = WSPOLCZYNNIK_PRZYWIAZANIA*BRAK_ZAKUPU_WPLYW_NA_MARKE
+                    where ID_KONSUMENTA = rec.ID_KONSUMENTA and id_marki IN (select id_marki from marki
+                                                                            where id_producenta != mar.id_producenta and id_marki != mar.id_marki);
+                flaga_zakupu := 't';
+                exit;
+            else
+                update PRZYWIAZANIA_DO_MAREK set WSPOLCZYNNIK_PRZYWIAZANIA = WSPOLCZYNNIK_PRZYWIAZANIA*NIEZASPOKOJONY_POPYT_WPLYW
+                    where ID_KONSUMENTA = rec.ID_KONSUMENTA and id_marki = mar.id_marki;
+            end if;
+
+        END LOOP;
+
+        if flaga_zakupu = 'n' then
+            insert into zakupy_konsumentow values (nr_rundy, rec.id_konsumenta, null);
+            --zminiejszenie przywiazania konsumenta do pozosytalych marek wynikajace z odzwyczajania/zapominania o marce
+            update PRZYWIAZANIA_DO_MAREK set WSPOLCZYNNIK_PRZYWIAZANIA = WSPOLCZYNNIK_PRZYWIAZANIA*BRAK_ZAKUPU_WPLYW_NA_MARKE
+                    where ID_KONSUMENTA = rec.ID_KONSUMENTA;
+        end if;
+
+        --commit;
+    END LOOP;
+END ZREALIZUJ_ZAKUPY;
+
+/
+--------------------------------------------------------
+--  DDL for Procedure ZRESTARTUJ_SEKWENCJE
+--------------------------------------------------------
+set define off;
+
+  CREATE OR REPLACE PROCEDURE "INZYNIERKA"."ZRESTARTUJ_SEKWENCJE" AS 
+BEGIN
+    RESTART_SEKWENCJI ('LICZNIK_RUND_SEQ');
+    RESTART_SEKWENCJI ('ID_MARKI_SEQ');
+    RESTART_SEKWENCJI ('ID_PRODUKCJI_SEQ');
+    RESTART_SEKWENCJI ('ID_RODZAJU_MARKET_SEQ');
+    RESTART_SEKWENCJI ('ID_GRUPY_KONSUMENTOW_SEQ');
+END ZRESTARTUJ_SEKWENCJE;
+
+/
+--------------------------------------------------------
+--  DDL for Function POLICZ_MPO_WYBRANE_WYMIARY
+--------------------------------------------------------
+
+  CREATE OR REPLACE FUNCTION "INZYNIERKA"."POLICZ_MPO_WYBRANE_WYMIARY" (
+                    CENA NUMBER, CZY_UWZGL_CENE CHAR,
+                    JAKOSC NUMBER, CZY_UWZGL_JAKOSC CHAR,
+                    PRZYWIAZANIE_DO_MARKI NUMBER, CZY_UWZGL_PRZYW_DO_MARKI CHAR,
+                    PRZYWIAZANIE_DO_PRODUCENTA NUMBER, CZY_UWZGL_PRZYW_DO_PRODUCENTA CHAR)
+RETURN NUMBER
+AS
+    epsilon NUMBER := 0.01;
+    wartosc_f_osiagniecia NUMBER;
+    suma NUMBER := 0;
+    minimum NUMBER := 999999999999999.99;
+BEGIN
+    if CZY_UWZGL_CENE = 't' then
+        suma := suma + cena;
+        minimum := least(cena, minimum); 
+    end if;
+
+    if CZY_UWZGL_JAKOSC = 't' then
+        suma := suma + jakosc;
+        minimum := least(jakosc, minimum); 
+    end if;
+
+    if CZY_UWZGL_PRZYW_DO_MARKI = 't' then
+        suma := suma + przywiazanie_do_marki;
+        minimum := least(przywiazanie_do_marki, minimum); 
+    end if;
+
+    if CZY_UWZGL_PRZYW_DO_PRODUCENTA = 't' then
+        suma := suma + przywiazanie_do_producenta;
+        minimum := least(przywiazanie_do_producenta, minimum); 
+    end if;
+
+    wartosc_f_osiagniecia := minimum + epsilon * suma;
+
+    return wartosc_f_osiagniecia;
+END POLICZ_MPO_WYBRANE_WYMIARY;
+
+/
+--------------------------------------------------------
+--  DDL for Function POLICZ_WYMIAR_MPO
+--------------------------------------------------------
+
+  CREATE OR REPLACE FUNCTION "INZYNIERKA"."POLICZ_WYMIAR_MPO" (POZIOM_ASPIRACJI NUMBER, POZIOM_REZERWACJI NUMBER, WARTOSC_PARAMETRU NUMBER)
+RETURN NUMBER
+AS
+    zadowolenie NUMBER := 0.001;
+    niezadowolenie NUMBER := 1000;
+    wartosc_f_osiagniecia NUMBER;
+    przedzial_1 NUMBER;
+    przedzial_2 NUMBER;
+    przedzial_3 NUMBER;
+BEGIN
+    przedzial_1 := zadowolenie*(wartosc_parametru - poziom_aspiracji)/(poziom_aspiracji - poziom_rezerwacji)+1;
+    przedzial_2 := (wartosc_parametru - poziom_rezerwacji)/(poziom_aspiracji - poziom_rezerwacji);
+    przedzial_3 := niezadowolenie*(wartosc_parametru - poziom_rezerwacji)/(poziom_aspiracji - poziom_rezerwacji);
+    wartosc_f_osiagniecia := least (przedzial_1, przedzial_2, przedzial_3);
+    return wartosc_f_osiagniecia;
+END POLICZ_WYMIAR_MPO;
+
+/
+--------------------------------------------------------
+--  Constraints for Table PRODUKCJE
+--------------------------------------------------------
+
+  ALTER TABLE "INZYNIERKA"."PRODUKCJE" ADD CONSTRAINT "PRODUKCJE_PK" PRIMARY KEY ("ID_PRODUKCJI")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM"  ENABLE;
+  ALTER TABLE "INZYNIERKA"."PRODUKCJE" MODIFY ("ID_MARKI" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."PRODUKCJE" MODIFY ("NUMER_RUNDY" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."PRODUKCJE" MODIFY ("KOSZT_PRODUKCJI" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."PRODUKCJE" MODIFY ("WOLUMEN" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."PRODUKCJE" MODIFY ("ID_PRODUKCJI" NOT NULL ENABLE);
+--------------------------------------------------------
+--  Constraints for Table PRODUCENCI
+--------------------------------------------------------
+
+  ALTER TABLE "INZYNIERKA"."PRODUCENCI" ADD CONSTRAINT "PRODUCENCI_NAZWA_PRODUCENTA_UN" UNIQUE ("NAZWA_PRODUCENTA")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM"  ENABLE;
+  ALTER TABLE "INZYNIERKA"."PRODUCENCI" ADD CONSTRAINT "PRODUCENCI_PK" PRIMARY KEY ("ID_PRODUCENTA")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM"  ENABLE;
+  ALTER TABLE "INZYNIERKA"."PRODUCENCI" ADD CHECK ( czy_spasowal IN (
+        'n',
+        't'
+    ) ) ENABLE;
+  ALTER TABLE "INZYNIERKA"."PRODUCENCI" MODIFY ("CZY_SPASOWAL" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."PRODUCENCI" MODIFY ("FUNDUSZE" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."PRODUCENCI" MODIFY ("NAZWA_PRODUCENTA" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."PRODUCENCI" MODIFY ("ID_PRODUCENTA" NOT NULL ENABLE);
+--------------------------------------------------------
+--  Constraints for Table ZAKUPY_KONSUMENTOW
+--------------------------------------------------------
+
+  ALTER TABLE "INZYNIERKA"."ZAKUPY_KONSUMENTOW" ADD CONSTRAINT "ZAKUPY_KONSUMENTOW_PK" PRIMARY KEY ("ID_KONSUMENTA", "NUMER_RUNDY")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM"  ENABLE;
+  ALTER TABLE "INZYNIERKA"."ZAKUPY_KONSUMENTOW" MODIFY ("ID_KONSUMENTA" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."ZAKUPY_KONSUMENTOW" MODIFY ("NUMER_RUNDY" NOT NULL ENABLE);
+--------------------------------------------------------
+--  Constraints for Table BADANIA_RYNKU
+--------------------------------------------------------
+
+  ALTER TABLE "INZYNIERKA"."BADANIA_RYNKU" ADD CONSTRAINT "BADANIA_RYNKU_PK" PRIMARY KEY ("ID_BADANIA_RYNKU")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM"  ENABLE;
+  ALTER TABLE "INZYNIERKA"."BADANIA_RYNKU" ADD CHECK ( uwzg_stosunek_do_producenta IN (
+        'n',
+        't'
+    ) ) ENABLE;
+  ALTER TABLE "INZYNIERKA"."BADANIA_RYNKU" ADD CHECK ( uwzglednic_stosunek_do_marki IN (
+        'n',
+        't'
+    ) ) ENABLE;
+  ALTER TABLE "INZYNIERKA"."BADANIA_RYNKU" ADD CHECK ( uwzglednic_cene IN (
+        'n',
+        't'
+    ) ) ENABLE;
+  ALTER TABLE "INZYNIERKA"."BADANIA_RYNKU" ADD CHECK ( uwzglednic_jakosc IN (
+        'n',
+        't'
+    ) ) ENABLE;
+  ALTER TABLE "INZYNIERKA"."BADANIA_RYNKU" MODIFY ("UWZG_STOSUNEK_DO_PRODUCENTA" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."BADANIA_RYNKU" MODIFY ("UWZGLEDNIC_STOSUNEK_DO_MARKI" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."BADANIA_RYNKU" MODIFY ("UWZGLEDNIC_CENE" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."BADANIA_RYNKU" MODIFY ("UWZGLEDNIC_JAKOSC" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."BADANIA_RYNKU" MODIFY ("KOSZT_BADANIA_RYNKU" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."BADANIA_RYNKU" MODIFY ("ID_GRUPY_KONSUMENTOW" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."BADANIA_RYNKU" MODIFY ("ID_MARKI" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."BADANIA_RYNKU" MODIFY ("HIS_ZAKUPOW_LICZBA_RUND" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."BADANIA_RYNKU" MODIFY ("NUMER_RUNDY" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."BADANIA_RYNKU" MODIFY ("ID_BADANIA_RYNKU" NOT NULL ENABLE);
+--------------------------------------------------------
+--  Constraints for Table PRZYNALEZNOSCI_DO_GRUP
+--------------------------------------------------------
+
+  ALTER TABLE "INZYNIERKA"."PRZYNALEZNOSCI_DO_GRUP" ADD CONSTRAINT "PRZYNALEZNOSCI_DO_GRUP_PK" PRIMARY KEY ("ID_KONSUMENTA", "ID_GRUPY_KONSUMENTOW")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM"  ENABLE;
+  ALTER TABLE "INZYNIERKA"."PRZYNALEZNOSCI_DO_GRUP" MODIFY ("ID_GRUPY_KONSUMENTOW" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."PRZYNALEZNOSCI_DO_GRUP" MODIFY ("ID_KONSUMENTA" NOT NULL ENABLE);
+--------------------------------------------------------
+--  Constraints for Table USTAWIENIA_POCZATKOWE
+--------------------------------------------------------
+
+  ALTER TABLE "INZYNIERKA"."USTAWIENIA_POCZATKOWE" ADD CONSTRAINT "USTAWIENIA_POCZATKOWE_PK" PRIMARY KEY ("NUMER_ZESTAWU")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM"  ENABLE;
+  ALTER TABLE "INZYNIERKA"."USTAWIENIA_POCZATKOWE" ADD CHECK ( sposob_nalicz_koszt_magazyn IN (
+        'l',
+        'm'
+    ) ) ENABLE;
+  ALTER TABLE "INZYNIERKA"."USTAWIENIA_POCZATKOWE" ADD CHECK ( aktywna IN (
+        'a',
+        'n'
+    ) ) ENABLE;
+  ALTER TABLE "INZYNIERKA"."USTAWIENIA_POCZATKOWE" MODIFY ("CZY_JAKOSCI_MAREK_DOMYSLNE" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."USTAWIENIA_POCZATKOWE" MODIFY ("KOSZT_MAG_SZTUKI_LUB_MAGAZYNU" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."USTAWIENIA_POCZATKOWE" MODIFY ("SPOSOB_NALICZ_KOSZT_MAGAZYN" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."USTAWIENIA_POCZATKOWE" MODIFY ("WYM_KONS_MIN_ROZNICA_PRZYW" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."USTAWIENIA_POCZATKOWE" MODIFY ("WYM_KONS_MAX_ROZNICA_PRZYW" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."USTAWIENIA_POCZATKOWE" MODIFY ("WYM_KONS_MIN_ROZNICA_JAKOSC" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."USTAWIENIA_POCZATKOWE" MODIFY ("WYM_KONS_MAX_ROZNICA_JAKOSC" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."USTAWIENIA_POCZATKOWE" MODIFY ("WYM_KONS_MIN_ROZNICA_CENA" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."USTAWIENIA_POCZATKOWE" MODIFY ("WYM_KONS_MAX_ROZNICA_CENA" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."USTAWIENIA_POCZATKOWE" MODIFY ("WYM_MIN_CENA" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."USTAWIENIA_POCZATKOWE" MODIFY ("WYM_MAX_CENA" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."USTAWIENIA_POCZATKOWE" MODIFY ("LICZBA_KONSUMENTOW" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."USTAWIENIA_POCZATKOWE" MODIFY ("NIEZASPOKOJONY_POPYT_WPLYW" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."USTAWIENIA_POCZATKOWE" MODIFY ("BRAK_ZAKUPU_WPLYW_NA_MARKE" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."USTAWIENIA_POCZATKOWE" MODIFY ("ZAKUP_WPLYW_NA_INNE_MARKI_PRO" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."USTAWIENIA_POCZATKOWE" MODIFY ("ZAKUP_WPLYW_NA_DOCELOWA_MARKE" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."USTAWIENIA_POCZATKOWE" MODIFY ("KOSZT_UTWORZENIA_MARKI" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."USTAWIENIA_POCZATKOWE" MODIFY ("POCZATKOWE_FUNDUSZE" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."USTAWIENIA_POCZATKOWE" MODIFY ("WARUNEK_ZAKONCZENIA_RUNDY" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."USTAWIENIA_POCZATKOWE" MODIFY ("AKTYWNA" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."USTAWIENIA_POCZATKOWE" MODIFY ("NUMER_ZESTAWU" NOT NULL ENABLE);
+--------------------------------------------------------
+--  Constraints for Table KONSUMENCI
+--------------------------------------------------------
+
+  ALTER TABLE "INZYNIERKA"."KONSUMENCI" ADD CONSTRAINT "KONSUMENCI_PK" PRIMARY KEY ("ID_KONSUMENTA")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM"  ENABLE;
+  ALTER TABLE "INZYNIERKA"."KONSUMENCI" MODIFY ("PODATNOSC_NA_MARKETING" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."KONSUMENCI" MODIFY ("PRZYWIAZANIE_POZIOM_REZERWACJI" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."KONSUMENCI" MODIFY ("PRZYWIAZANIE_POZIOM_ASPIRACJI" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."KONSUMENCI" MODIFY ("JAKOSC_POZIOM_REZERWACJI" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."KONSUMENCI" MODIFY ("JAKOSC_POZIOM_ASPIRACJI" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."KONSUMENCI" MODIFY ("CENA_POZIOM_REZERWACJI" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."KONSUMENCI" MODIFY ("CENA_POZIOM_ASPIRACJI" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."KONSUMENCI" MODIFY ("ID_KONSUMENTA" NOT NULL ENABLE);
+--------------------------------------------------------
+--  Constraints for Table DOSTEPY_PRODUCENTOW_HIS_ZAKUP
+--------------------------------------------------------
+
+  ALTER TABLE "INZYNIERKA"."DOSTEPY_PRODUCENTOW_HIS_ZAKUP" ADD CONSTRAINT "DOST_HIS_ZAKUP_PK" PRIMARY KEY ("ID_KONSUMENTA", "NUMER_RUNDY", "ID_BADANIA_RYNKU")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM"  ENABLE;
+  ALTER TABLE "INZYNIERKA"."DOSTEPY_PRODUCENTOW_HIS_ZAKUP" MODIFY ("ID_BADANIA_RYNKU" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."DOSTEPY_PRODUCENTOW_HIS_ZAKUP" MODIFY ("NUMER_RUNDY" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."DOSTEPY_PRODUCENTOW_HIS_ZAKUP" MODIFY ("ID_KONSUMENTA" NOT NULL ENABLE);
+--------------------------------------------------------
+--  Constraints for Table PRZYWIAZANIA_DO_MAREK
+--------------------------------------------------------
+
+  ALTER TABLE "INZYNIERKA"."PRZYWIAZANIA_DO_MAREK" ADD CONSTRAINT "PRZYWIAZANIA_DO_MAREK_PK" PRIMARY KEY ("ID_KONSUMENTA", "ID_MARKI")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM"  ENABLE;
+  ALTER TABLE "INZYNIERKA"."PRZYWIAZANIA_DO_MAREK" MODIFY ("ID_MARKI" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."PRZYWIAZANIA_DO_MAREK" MODIFY ("WSPOLCZYNNIK_PRZYWIAZANIA" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."PRZYWIAZANIA_DO_MAREK" MODIFY ("ID_KONSUMENTA" NOT NULL ENABLE);
+--------------------------------------------------------
+--  Constraints for Table NUMERY_RUND
+--------------------------------------------------------
+
+  ALTER TABLE "INZYNIERKA"."NUMERY_RUND" ADD CONSTRAINT "NUMERY_RUND_PK" PRIMARY KEY ("NUMER_RUNDY")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM"  ENABLE;
+  ALTER TABLE "INZYNIERKA"."NUMERY_RUND" MODIFY ("NUMER_RUNDY" NOT NULL ENABLE);
+--------------------------------------------------------
+--  Constraints for Table GRUPY_KONSUMENTOW
+--------------------------------------------------------
+
+  ALTER TABLE "INZYNIERKA"."GRUPY_KONSUMENTOW" ADD CONSTRAINT "GRUPY_KONSUMENTOW_PK" PRIMARY KEY ("ID_GRUPY_KONSUMENTOW")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM"  ENABLE;
+  ALTER TABLE "INZYNIERKA"."GRUPY_KONSUMENTOW" MODIFY ("KOSZT_HIS_ZAKUP_JEDNA_TURA" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."GRUPY_KONSUMENTOW" MODIFY ("KOSZT_UZYSKANIA_OCEN" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."GRUPY_KONSUMENTOW" MODIFY ("ID_GRUPY_KONSUMENTOW" NOT NULL ENABLE);
+--------------------------------------------------------
+--  Constraints for Table MARKI
+--------------------------------------------------------
+
+  ALTER TABLE "INZYNIERKA"."MARKI" ADD CONSTRAINT "MARKI_NAZWA_MARKI_UN" UNIQUE ("NAZWA_MARKI")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM"  ENABLE;
+  ALTER TABLE "INZYNIERKA"."MARKI" ADD CONSTRAINT "MARKI_PK" PRIMARY KEY ("ID_MARKI")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM"  ENABLE;
+  ALTER TABLE "INZYNIERKA"."MARKI" ADD CHECK ( czy_utworzona IN (
+        'n',
+        't'
+    ) ) ENABLE;
+  ALTER TABLE "INZYNIERKA"."MARKI" MODIFY ("TYMCZASOWA_OCENA_KLIENTA" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."MARKI" MODIFY ("AKTUALNA_LICZBA_SZTUK" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."MARKI" MODIFY ("CZY_UTWORZONA" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."MARKI" MODIFY ("CENA_ZA_SZTUKE" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."MARKI" MODIFY ("KOSZT_PRODUKCJI_SZTUKI" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."MARKI" MODIFY ("JAKOSC_MARKI" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."MARKI" MODIFY ("NAZWA_MARKI" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."MARKI" MODIFY ("ID_PRODUCENTA" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."MARKI" MODIFY ("ID_MARKI" NOT NULL ENABLE);
+--------------------------------------------------------
+--  Constraints for Table OCENY_MAREK
+--------------------------------------------------------
+
+  ALTER TABLE "INZYNIERKA"."OCENY_MAREK" ADD CONSTRAINT "OCENY_MAREK_PK" PRIMARY KEY ("ID_KONSUMENTA", "ID_BADANIA_RYNKU")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM"  ENABLE;
+  ALTER TABLE "INZYNIERKA"."OCENY_MAREK" MODIFY ("OCENA" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."OCENY_MAREK" MODIFY ("ID_BADANIA_RYNKU" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."OCENY_MAREK" MODIFY ("ID_KONSUMENTA" NOT NULL ENABLE);
+--------------------------------------------------------
+--  Constraints for Table HISTORIE_CEN
+--------------------------------------------------------
+
+  ALTER TABLE "INZYNIERKA"."HISTORIE_CEN" ADD CONSTRAINT "HISTORIE_CEN_PK" PRIMARY KEY ("ID_MARKI", "NUMER_RUNDY")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM"  ENABLE;
+  ALTER TABLE "INZYNIERKA"."HISTORIE_CEN" MODIFY ("NUMER_RUNDY" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."HISTORIE_CEN" MODIFY ("ID_MARKI" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."HISTORIE_CEN" MODIFY ("CENA" NOT NULL ENABLE);
+--------------------------------------------------------
+--  Constraints for Table RODZAJE_MARKETINGU
+--------------------------------------------------------
+
+  ALTER TABLE "INZYNIERKA"."RODZAJE_MARKETINGU" ADD CONSTRAINT "RODZAJE_MARKETINGU_PK" PRIMARY KEY ("ID_RODZAJU_MARKETINGU")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM"  ENABLE;
+  ALTER TABLE "INZYNIERKA"."RODZAJE_MARKETINGU" MODIFY ("WPLYW_NA_INNE_MARKI_PROD" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."RODZAJE_MARKETINGU" MODIFY ("WPLYW_NA_DOCELOWA_MARKE" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."RODZAJE_MARKETINGU" MODIFY ("KOSZTA_PER_KLIENT" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."RODZAJE_MARKETINGU" MODIFY ("KOSZT_BAZOWY" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."RODZAJE_MARKETINGU" MODIFY ("ID_RODZAJU_MARKETINGU" NOT NULL ENABLE);
+--------------------------------------------------------
+--  Constraints for Table MARKETINGI
+--------------------------------------------------------
+
+  ALTER TABLE "INZYNIERKA"."MARKETINGI" ADD CONSTRAINT "MARKETINGI_PK" PRIMARY KEY ("ID_MARKETINGU")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM"  ENABLE;
+  ALTER TABLE "INZYNIERKA"."MARKETINGI" MODIFY ("ID_MARKI" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."MARKETINGI" MODIFY ("KOSZT_MARKETINGU" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."MARKETINGI" MODIFY ("LICZBA_KLIENTOW" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."MARKETINGI" MODIFY ("ID_RODZAJU_MARKETINGU" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."MARKETINGI" MODIFY ("NUMER_RUNDY" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."MARKETINGI" MODIFY ("ID_MARKETINGU" NOT NULL ENABLE);
+--------------------------------------------------------
+--  Constraints for Table MAGAZYNOWANIA
+--------------------------------------------------------
+
+  ALTER TABLE "INZYNIERKA"."MAGAZYNOWANIA" ADD CONSTRAINT "MAGAZYNOWANIA_PK" PRIMARY KEY ("NUMER_RUNDY", "ID_MARKI")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM"  ENABLE;
+  ALTER TABLE "INZYNIERKA"."MAGAZYNOWANIA" MODIFY ("ID_MARKI" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."MAGAZYNOWANIA" MODIFY ("NUMER_RUNDY" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."MAGAZYNOWANIA" MODIFY ("KOSZT_MAGAZYNOWANIA" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."MAGAZYNOWANIA" MODIFY ("WOLUMEN" NOT NULL ENABLE);
+--------------------------------------------------------
+--  Constraints for Table JAKOSCI_MAREK
+--------------------------------------------------------
+
+  ALTER TABLE "INZYNIERKA"."JAKOSCI_MAREK" ADD CONSTRAINT "JAKOSCI_MAREK_PK" PRIMARY KEY ("JAKOSC_MARKI")
+  USING INDEX PCTFREE 10 INITRANS 2 MAXTRANS 255 COMPUTE STATISTICS 
+  STORAGE(INITIAL 65536 NEXT 1048576 MINEXTENTS 1 MAXEXTENTS 2147483645
+  PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1 BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
+  TABLESPACE "SYSTEM"  ENABLE;
+  ALTER TABLE "INZYNIERKA"."JAKOSCI_MAREK" MODIFY ("REF_KOSZT_PRODUKCJI_SZTUKI" NOT NULL ENABLE);
+  ALTER TABLE "INZYNIERKA"."JAKOSCI_MAREK" MODIFY ("JAKOSC_MARKI" NOT NULL ENABLE);
+--------------------------------------------------------
+--  Ref Constraints for Table BADANIA_RYNKU
+--------------------------------------------------------
+
+  ALTER TABLE "INZYNIERKA"."BADANIA_RYNKU" ADD CONSTRAINT "BADANIA_RYNKU_GR_KONSUM_FK" FOREIGN KEY ("ID_GRUPY_KONSUMENTOW")
+	  REFERENCES "INZYNIERKA"."GRUPY_KONSUMENTOW" ("ID_GRUPY_KONSUMENTOW") ON DELETE CASCADE ENABLE;
+  ALTER TABLE "INZYNIERKA"."BADANIA_RYNKU" ADD CONSTRAINT "BADANIA_RYNKU_MARKI_FK" FOREIGN KEY ("ID_MARKI")
+	  REFERENCES "INZYNIERKA"."MARKI" ("ID_MARKI") ENABLE;
+  ALTER TABLE "INZYNIERKA"."BADANIA_RYNKU" ADD CONSTRAINT "BADANIA_RYNKU_NUMERY_RUND_FK" FOREIGN KEY ("NUMER_RUNDY")
+	  REFERENCES "INZYNIERKA"."NUMERY_RUND" ("NUMER_RUNDY") ON DELETE CASCADE ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table DOSTEPY_PRODUCENTOW_HIS_ZAKUP
+--------------------------------------------------------
+
+  ALTER TABLE "INZYNIERKA"."DOSTEPY_PRODUCENTOW_HIS_ZAKUP" ADD CONSTRAINT "DOST_HIS_BADANIA_RYNKU_FK" FOREIGN KEY ("ID_BADANIA_RYNKU")
+	  REFERENCES "INZYNIERKA"."BADANIA_RYNKU" ("ID_BADANIA_RYNKU") ON DELETE CASCADE ENABLE;
+  ALTER TABLE "INZYNIERKA"."DOSTEPY_PRODUCENTOW_HIS_ZAKUP" ADD CONSTRAINT "DOST_HIS_ZAKUPY_KONSUM_FK" FOREIGN KEY ("ID_KONSUMENTA", "NUMER_RUNDY")
+	  REFERENCES "INZYNIERKA"."ZAKUPY_KONSUMENTOW" ("ID_KONSUMENTA", "NUMER_RUNDY") ON DELETE CASCADE ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table HISTORIE_CEN
+--------------------------------------------------------
+
+  ALTER TABLE "INZYNIERKA"."HISTORIE_CEN" ADD CONSTRAINT "HISTORIE_CEN_MARKI_FK" FOREIGN KEY ("ID_MARKI")
+	  REFERENCES "INZYNIERKA"."MARKI" ("ID_MARKI") ON DELETE CASCADE ENABLE;
+  ALTER TABLE "INZYNIERKA"."HISTORIE_CEN" ADD CONSTRAINT "HISTORIE_CEN_NUMERY_RUND_FK" FOREIGN KEY ("NUMER_RUNDY")
+	  REFERENCES "INZYNIERKA"."NUMERY_RUND" ("NUMER_RUNDY") ON DELETE CASCADE ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table MAGAZYNOWANIA
+--------------------------------------------------------
+
+  ALTER TABLE "INZYNIERKA"."MAGAZYNOWANIA" ADD CONSTRAINT "MAGAZYNOWANIA_MARKI_FK" FOREIGN KEY ("ID_MARKI")
+	  REFERENCES "INZYNIERKA"."MARKI" ("ID_MARKI") ON DELETE CASCADE ENABLE;
+  ALTER TABLE "INZYNIERKA"."MAGAZYNOWANIA" ADD CONSTRAINT "MAGAZYNOWANIA_NUMERY_RUND_FK" FOREIGN KEY ("NUMER_RUNDY")
+	  REFERENCES "INZYNIERKA"."NUMERY_RUND" ("NUMER_RUNDY") ON DELETE CASCADE ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table MARKETINGI
+--------------------------------------------------------
+
+  ALTER TABLE "INZYNIERKA"."MARKETINGI" ADD CONSTRAINT "MARKETINGI_MARKI_FK" FOREIGN KEY ("ID_MARKI")
+	  REFERENCES "INZYNIERKA"."MARKI" ("ID_MARKI") ON DELETE CASCADE ENABLE;
+  ALTER TABLE "INZYNIERKA"."MARKETINGI" ADD CONSTRAINT "MARKETINGI_NUMERY_RUND_FK" FOREIGN KEY ("NUMER_RUNDY")
+	  REFERENCES "INZYNIERKA"."NUMERY_RUND" ("NUMER_RUNDY") ON DELETE CASCADE ENABLE;
+  ALTER TABLE "INZYNIERKA"."MARKETINGI" ADD CONSTRAINT "MARKETINGI_RODZ_MARKETINGU_FK" FOREIGN KEY ("ID_RODZAJU_MARKETINGU")
+	  REFERENCES "INZYNIERKA"."RODZAJE_MARKETINGU" ("ID_RODZAJU_MARKETINGU") ON DELETE CASCADE ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table MARKI
+--------------------------------------------------------
+
+  ALTER TABLE "INZYNIERKA"."MARKI" ADD CONSTRAINT "MARKI_JAKOSCI_MAREK_FK" FOREIGN KEY ("JAKOSC_MARKI")
+	  REFERENCES "INZYNIERKA"."JAKOSCI_MAREK" ("JAKOSC_MARKI") ON DELETE CASCADE ENABLE;
+  ALTER TABLE "INZYNIERKA"."MARKI" ADD CONSTRAINT "MARKI_PRODUCENCI_FK" FOREIGN KEY ("ID_PRODUCENTA")
+	  REFERENCES "INZYNIERKA"."PRODUCENCI" ("ID_PRODUCENTA") ON DELETE CASCADE ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table OCENY_MAREK
+--------------------------------------------------------
+
+  ALTER TABLE "INZYNIERKA"."OCENY_MAREK" ADD CONSTRAINT "OCENY_MAREK_BADANIA_RYNKU_FK" FOREIGN KEY ("ID_BADANIA_RYNKU")
+	  REFERENCES "INZYNIERKA"."BADANIA_RYNKU" ("ID_BADANIA_RYNKU") ON DELETE CASCADE ENABLE;
+  ALTER TABLE "INZYNIERKA"."OCENY_MAREK" ADD CONSTRAINT "OCENY_MAREK_KONSUMENCI_FK" FOREIGN KEY ("ID_KONSUMENTA")
+	  REFERENCES "INZYNIERKA"."KONSUMENCI" ("ID_KONSUMENTA") ON DELETE CASCADE ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table PRODUKCJE
+--------------------------------------------------------
+
+  ALTER TABLE "INZYNIERKA"."PRODUKCJE" ADD CONSTRAINT "PRODUKCJE_MARKI_FK" FOREIGN KEY ("ID_MARKI")
+	  REFERENCES "INZYNIERKA"."MARKI" ("ID_MARKI") ON DELETE CASCADE ENABLE;
+  ALTER TABLE "INZYNIERKA"."PRODUKCJE" ADD CONSTRAINT "PRODUKCJE_NUMERY_RUND_FK" FOREIGN KEY ("NUMER_RUNDY")
+	  REFERENCES "INZYNIERKA"."NUMERY_RUND" ("NUMER_RUNDY") ON DELETE CASCADE ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table PRZYNALEZNOSCI_DO_GRUP
+--------------------------------------------------------
+
+  ALTER TABLE "INZYNIERKA"."PRZYNALEZNOSCI_DO_GRUP" ADD CONSTRAINT "PRZYN_DO_GR_G_KONSUMENTOW_FK" FOREIGN KEY ("ID_GRUPY_KONSUMENTOW")
+	  REFERENCES "INZYNIERKA"."GRUPY_KONSUMENTOW" ("ID_GRUPY_KONSUMENTOW") ON DELETE CASCADE ENABLE;
+  ALTER TABLE "INZYNIERKA"."PRZYNALEZNOSCI_DO_GRUP" ADD CONSTRAINT "PRZYN_DO_GR_KONSUMENCI_FK" FOREIGN KEY ("ID_KONSUMENTA")
+	  REFERENCES "INZYNIERKA"."KONSUMENCI" ("ID_KONSUMENTA") ON DELETE CASCADE ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table PRZYWIAZANIA_DO_MAREK
+--------------------------------------------------------
+
+  ALTER TABLE "INZYNIERKA"."PRZYWIAZANIA_DO_MAREK" ADD CONSTRAINT "PRZYW_DO_MAREK_KONSUMENCI_FK" FOREIGN KEY ("ID_KONSUMENTA")
+	  REFERENCES "INZYNIERKA"."KONSUMENCI" ("ID_KONSUMENTA") ON DELETE CASCADE ENABLE;
+  ALTER TABLE "INZYNIERKA"."PRZYWIAZANIA_DO_MAREK" ADD CONSTRAINT "PRZYW_DO_MAREK_MARKI_FK" FOREIGN KEY ("ID_MARKI")
+	  REFERENCES "INZYNIERKA"."MARKI" ("ID_MARKI") ON DELETE CASCADE ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table ZAKUPY_KONSUMENTOW
+--------------------------------------------------------
+
+  ALTER TABLE "INZYNIERKA"."ZAKUPY_KONSUMENTOW" ADD CONSTRAINT "ZAKUPY_KONSUM_KONSUMENCI_FK" FOREIGN KEY ("ID_KONSUMENTA")
+	  REFERENCES "INZYNIERKA"."KONSUMENCI" ("ID_KONSUMENTA") ON DELETE CASCADE ENABLE;
+  ALTER TABLE "INZYNIERKA"."ZAKUPY_KONSUMENTOW" ADD CONSTRAINT "ZAKUPY_KONSUM_MARKI_FK" FOREIGN KEY ("ID_MARKI")
+	  REFERENCES "INZYNIERKA"."MARKI" ("ID_MARKI") ON DELETE CASCADE ENABLE;
+  ALTER TABLE "INZYNIERKA"."ZAKUPY_KONSUMENTOW" ADD CONSTRAINT "ZAKUPY_KONSUM_NUMERY_RUND_FK" FOREIGN KEY ("NUMER_RUNDY")
+	  REFERENCES "INZYNIERKA"."NUMERY_RUND" ("NUMER_RUNDY") ON DELETE CASCADE ENABLE;

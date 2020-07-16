@@ -210,7 +210,7 @@ WHERE
     m.id_marki = p.id_marki
     and k.id_konsumenta = p.id_konsumenta
     and m.id_producenta = w.id_producenta;
-    
+/*    
 CREATE OR REPLACE VIEW SPRZEDAZ_P
 AS SELECT
     zak.numer_rundy, mar.NAZWA_MARKI, mar.id_producenta, zak.wolumen, zak.wolumen*ceny.cena as przychod
@@ -233,7 +233,32 @@ from
 where
     ceny.id_marki = zak.id_marki and ceny.numer_rundy = zak.numer_rundy
     and mar.id_marki = zak.id_marki
+;*/
+
+CREATE OR REPLACE VIEW SPRZEDAZ_P
+AS SELECT
+    zak.numer_rundy, mar.NAZWA_MARKI, mar.id_producenta, zak.wolumen, zak.wolumen*ceny.cena as przychod
+from
+    (--zapytanie, ktore kazdej parze (marka, runda) przypisuje cene marki w danej rundzie
+    select m.id_marki, n.numer_rundy,
+        (select cena from 
+            (select cena from historie_cen
+            --where id_marki = m.id_marki and numer_rundy <= n.numer_rundy
+            order by numer_rundy desc)
+                where rownum <= 1) as cena
+    from  marki m, numery_rund n
+    order by id_marki, numer_rundy) ceny,
+    
+    (--zapytanie, ktore sumuje zakupy konsumentow
+    select id_marki, numer_rundy, count(id_marki) as wolumen
+    from  ZAKUPY_KONSUMENTOW
+    group by id_marki, numer_rundy) zak,
+    marki mar
+where
+    ceny.id_marki = zak.id_marki and ceny.numer_rundy = zak.numer_rundy
+    and mar.id_marki = zak.id_marki
 ;
+
 
 CREATE OR REPLACE VIEW SPRZEDAZ_PRODUCENTOW_P
 AS SELECT
