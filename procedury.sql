@@ -236,22 +236,77 @@ create or replace PROCEDURE GENERUJ_KONSUMENTOW
 IS
     liczba_kons number(10, 0);
     cena_aspiracja number (5, 0);
-    jakosc_aspiracja number (2, 0);
-    przywiazanie_aspiracja number (4, 2); 
+    jakosc_rezerwacja number (2, 0);
+    przywiazanie_rezerwacja number (4, 2);
+    
+    max_cena NUMBER;
+    min_cena NUMBER;
+    max_jakosc NUMBER;
+    min_jakosc NUMBER;
+    max_przywiazanie NUMBER := 2.0;
+    min_przywiazanie NUMBER := 1.0;
+    max_roznica_cena NUMBER;
+    min_roznica_cena NUMBER;
+    max_roznica_jakosc NUMBER;
+    min_roznica_jakosc NUMBER;
+    max_roznica_przyw NUMBER;
+    min_roznica_przyw NUMBER;
+    krok_cena NUMBER;
+    krok_jakosc NUMBER;
+    
 BEGIN
-    select liczba_konsumentow into liczba_kons from ustawienia_poczatkowe where aktywna = 'a';
-    FOR i IN 1 ..liczba_kons LOOP
-        cena_aspiracja := DBMS_RANDOM.value(100, 4900);
-        jakosc_aspiracja := DBMS_RANDOM.value(3, 10);
-        przywiazanie_aspiracja := DBMS_RANDOM.value(1.03, 1.99);
+    select
+        liczba_konsumentow,
+        wym_max_cena,
+        wym_min_cena,
+        wym_kons_max_roznica_cena,
+        wym_kons_min_roznica_cena,
+        wym_kons_max_roznica_jakosc,
+        wym_kons_min_roznica_jakosc,
+        wym_kons_max_roznica_przyw,
+        wym_kons_min_roznica_przyw
+    into
+        liczba_kons,
+        max_cena,
+        min_cena,
+        max_roznica_cena,
+        min_roznica_cena,
+        max_roznica_jakosc,
+        min_roznica_jakosc,
+        max_roznica_przyw,
+        min_roznica_przyw
+    from ustawienia_poczatkowe where aktywna = 'a';
+    
+    select
+        max(jakosc_marki),
+        min(jakosc_marki)
+    into
+        max_jakosc,
+        min_jakosc
+    from jakosci_marek;
+    
+    --krok obliczany ze wzoru na sume ciagu arytmetycznego
+    krok_cena := 2*(max_cena - min_cena)/(liczba_kons*(liczba_kons - 1));
+    krok_jakosc := 2*(max_jakosc - min_jakosc)/(liczba_kons*(liczba_kons - 1));
+    
+    FOR i IN liczba_kons..1 LOOP
+        cena_aspiracja := DBMS_RANDOM.value(min_cena + (i-1)*krok_cena, min_cena + (i-1)*krok_cena + max_roznica_cena - min_roznica_cena);
+        jakosc_rezerwacja := DBMS_RANDOM.value(min_jakosc + (i-1)*krok_jakosc, min_jakosc + (i-1)*krok_jakosc + max_roznica_jakosc - min_roznica_jakosc);
+        przywiazanie_rezerwacja := DBMS_RANDOM.value(min_przywiazanie, max_przywiazanie - min_roznica_przyw);
         insert into konsumenci values (i,
-                            cena_aspiracja, DBMS_RANDOM.value(cena_aspiracja + 10, 5000), --cena
-                            jakosc_aspiracja, DBMS_RANDOM.value(1, jakosc_aspiracja-1), --jakosc
-                            przywiazanie_aspiracja, DBMS_RANDOM.value(1.00, przywiazanie_aspiracja-0.2), --przywiazanie do marki
+                            
+                            cena_aspiracja,                                             --cena
+                            DBMS_RANDOM.value(cena_aspiracja + min_roznica_cena, min_cena + (i-1)*krok_cena + max_roznica_cena),
+                            
+                            DBMS_RANDOM.value(jakosc_rezerwacja + min_roznica_jakosc, min_jakosc + (i-1)*krok_jakosc + max_roznica_jakosc),                  --jakosc
+                            jakosc_rezerwacja,
+                            
+                            DBMS_RANDOM.value(przywiazanie_rezerwacja + min_roznica_przyw, max_przywiazanie),       --przywiazanie do marki
+                            przywiazanie_rezerwacja, 
+                            
                             DBMS_RANDOM.value(0.1, 0.99)); --podatnosc na marketing
     END LOOP;
 END GENERUJ_KONSUMENTOW;
-/
 
 create or replace PROCEDURE WSTAW_DOMYSLNE_JAKOSCI_MAREK
 IS
