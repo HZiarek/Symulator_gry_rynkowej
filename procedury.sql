@@ -146,7 +146,6 @@ END RESTART_SEKWENCJI;
 
 create or replace PROCEDURE WYCZYSC_TABELE AS 
 BEGIN
-    --czyszczenie
     EXECUTE IMMEDIATE 'TRUNCATE TABLE dostepy_producentow_his_zakup';
     EXECUTE IMMEDIATE 'TRUNCATE TABLE oceny_marek';
     EXECUTE IMMEDIATE 'TRUNCATE TABLE historie_cen';
@@ -154,15 +153,36 @@ BEGIN
     EXECUTE IMMEDIATE 'TRUNCATE TABLE produkcje';
     EXECUTE IMMEDIATE 'TRUNCATE TABLE przywiazania_do_marek';
     EXECUTE IMMEDIATE 'TRUNCATE TABLE marketingi';
+    EXECUTE IMMEDIATE 'TRUNCATE TABLE PRZYNALEZNOSCI_DO_GRUP';
     
-    DELETE FROM PRZYNALEZNOSCI_DO_GRUP CASCADE;
-    DELETE FROM GRUPY_KONSUMENTOW CASCADE;
-    DELETE FROM zakupy_konsumentow CASCADE;
-    DELETE FROM badania_rynku CASCADE;
+    EXECUTE IMMEDIATE 'alter table badania_rynku disable constraint BADANIA_RYNKU_GR_KONSUM_FK';
+    EXECUTE IMMEDIATE 'alter table przynaleznosci_do_grup disable constraint PRZYN_DO_GR_G_KONSUMENTOW_FK';
+    EXECUTE IMMEDIATE 'truncate table GRUPY_KONSUMENTOW';
+    EXECUTE IMMEDIATE 'alter table badania_rynku enable constraint BADANIA_RYNKU_GR_KONSUM_FK';
+    EXECUTE IMMEDIATE 'alter table przynaleznosci_do_grup enable constraint PRZYN_DO_GR_G_KONSUMENTOW_FK';
+    
+    EXECUTE IMMEDIATE 'alter table dostepy_producentow_his_zakup disable constraint DOST_HIS_ZAKUPY_KONSUM_FK';
+    EXECUTE IMMEDIATE 'truncate table zakupy_konsumentow';
+    EXECUTE IMMEDIATE 'alter table dostepy_producentow_his_zakup enable constraint DOST_HIS_ZAKUPY_KONSUM_FK';
+    
+    EXECUTE IMMEDIATE 'alter table oceny_marek disable constraint OCENY_MAREK_BADANIA_RYNKU_FK';
+    EXECUTE IMMEDIATE 'alter table dostepy_producentow_his_zakup disable constraint DOST_HIS_BADANIA_RYNKU_FK';
+    EXECUTE IMMEDIATE 'truncate table badania_rynku';
+    EXECUTE IMMEDIATE 'alter table oceny_marek enable constraint OCENY_MAREK_BADANIA_RYNKU_FK';
+    EXECUTE IMMEDIATE 'alter table dostepy_producentow_his_zakup enable constraint DOST_HIS_BADANIA_RYNKU_FK';
+    
+    EXECUTE IMMEDIATE 'alter table oceny_marek disable constraint OCENY_MAREK_KONSUMENCI_FK';
+    EXECUTE IMMEDIATE 'alter table zakupy_konsumentow disable constraint ZAKUPY_KONSUM_KONSUMENCI_FK';
+    EXECUTE IMMEDIATE 'alter table przynaleznosci_do_grup disable constraint PRZYN_DO_GR_KONSUMENCI_FK';
+    EXECUTE IMMEDIATE 'alter table przywiazania_do_marek disable constraint PRZYW_DO_MAREK_KONSUMENCI_FK';
+    EXECUTE IMMEDIATE 'truncate table konsumenci';
+    EXECUTE IMMEDIATE 'alter table oceny_marek enable constraint OCENY_MAREK_KONSUMENCI_FK';
+    EXECUTE IMMEDIATE 'alter table zakupy_konsumentow enable constraint ZAKUPY_KONSUM_KONSUMENCI_FK';
+    EXECUTE IMMEDIATE 'alter table przynaleznosci_do_grup enable constraint PRZYN_DO_GR_KONSUMENCI_FK';
+    EXECUTE IMMEDIATE 'alter table przywiazania_do_marek enable constraint PRZYW_DO_MAREK_KONSUMENCI_FK';
+    
     DELETE FROM marki CASCADE;
     DELETE FROM numery_rund CASCADE;
-    DELETE FROM konsumenci CASCADE;
-    commit;
 END WYCZYSC_TABELE;
 /
 
