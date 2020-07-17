@@ -517,3 +517,122 @@ BEGIN
     return wartosc_f_osiagniecia;
 END POLICZ_MPO_WYBRANE_WYMIARY;
 /
+
+create or replace PROCEDURE ZREALIZUJ_ZAKUPY_V2 AS
+    nr_rundy NUMBER;
+    wybrana_marka NUMBER;
+    wspolczynnik_modyfikacji NUMBER;
+    flaga_zakupu CHAR(1) := 'n';
+BEGIN
+    select max(numer_rundy) into nr_rundy from numery_rund;
+
+
+
+    FOR REC IN ((SELECT
+                    id_konsumenta,
+                    CENA_POZIOM_ASPIRACJI,
+                    CENA_POZIOM_REZERWACJI,
+                    JAKOSC_POZIOM_ASPIRACJI,
+                    JAKOSC_POZIOM_REZERWACJI,
+                    PRZYWIAZANIE_POZIOM_ASPIRACJI,
+                    PRZYWIAZANIE_POZIOM_REZERWACJI
+                from
+                    konsumenci))
+    LOOP 
+
+    select id_marki into wybrana_marka from (
+        select
+            id_marki,
+            --funkcja osiagniecia wartosc_f_osiagniecia := min(f1, f2, ...) + epsilon * (f1 + f2 + ...);
+            least(
+                POLICZ_WYMIAR_MPO(rec.cena_poziom_aspiracji, rec.cena_poziom_rezerwacji, cena_za_sztuke),
+                POLICZ_WYMIAR_MPO(rec.jakosc_poziom_aspiracji, rec.jakosc_poziom_rezerwacji, jakosc_marki),
+                POLICZ_WYMIAR_MPO(rec.przywiazanie_poziom_aspiracji, rec.przywiazanie_poziom_rezerwacji, marketing_runda),
+                POLICZ_WYMIAR_MPO(rec.przywiazanie_poziom_aspiracji, rec.przywiazanie_poziom_rezerwacji, marketing_historia),
+                POLICZ_WYMIAR_MPO(0.2, 1, historia_zakupow))
+            + 0.01 * (
+                POLICZ_WYMIAR_MPO(rec.cena_poziom_aspiracji, rec.cena_poziom_rezerwacji, cena_za_sztuke) +
+                POLICZ_WYMIAR_MPO(rec.jakosc_poziom_aspiracji, rec.jakosc_poziom_rezerwacji, jakosc_marki) +
+                POLICZ_WYMIAR_MPO(rec.przywiazanie_poziom_aspiracji, rec.przywiazanie_poziom_rezerwacji, marketing_runda) +
+                POLICZ_WYMIAR_MPO(rec.przywiazanie_poziom_aspiracji, rec.przywiazanie_poziom_rezerwacji, marketing_historia) +
+                POLICZ_WYMIAR_MPO(0.2, 1, historia_zakupow)
+            ) as wart_f_osiagniecia
+        from(                  
+        with reklama_marki_runda as(
+            select
+                m.id_marki,
+                NVL(sum(wplyw_na_docelowa_marke),0) as wplyw_marka
+            from marketingi m, rodzaje_marketingu r
+            where
+                m.id_rodzaju_marketingu = r.id_rodzaju_marketingu
+                and m.numer_rundy = nr_rundy
+            group by m.id_marki
+        ),
+        reklama_marki_his as(
+            select
+                m.id_marki,
+                NVL(sum(wplyw_na_docelowa_marke), 0) as wplyw_marka_his
+            from marketingi m, rodzaje_marketingu r
+            where
+                m.id_rodzaju_marketingu = r.id_rodzaju_marketingu
+                and m.numer_rundy <= nr_rundy
+            group by m.id_marki
+        ),
+        reklama_producenta_runda as (
+            select m.id_producenta, NVL(avg(o.wplyw_marka), 0) as wplyw_producent
+            from
+                reklama_marki_runda o,
+                marki m
+            where
+                m.id_marki = o.id_marki
+            group by
+                m.id_producenta),
+        reklama_producenta_his as (
+            select m.id_producenta, NVL(avg(o.wplyw_marka_his), 0) as wplyw_producent_his
+            from
+                reklama_marki_his o,
+                marki m
+            where
+                m.id_marki = o.id_marki
+            group by
+                m.id_producenta)
+        select
+            m.id_marki,
+            m.cena_za_sztuke,
+            m.jakosc_marki,
+            (0.4*mr.wplyw_marka + 0.6*pr.wplyw_producent) as marketing_runda,
+            (0.4*mh.wplyw_marka_his + 0.6*ph.wplyw_producent_his) as marketing_historia,
+            (SELECT
+                NVL(sum(CASE
+                WHEN numer_rundy IN(4-1, 4-3)
+                    THEN 2
+                WHEN numer_rundy = 4-2
+                    THEN 3
+                WHEN numer_rundy IN(4-4, 4-5, 4-6)
+                    THEN 1
+                ELSE 0
+                END), 0)/10 AS wart
+            FROM zakupy_konsumentow
+            where id_konsumenta = rec.id_konsumenta and id_marki = m.id_marki
+            ) as historia_zakupow
+        from 
+            reklama_producenta_runda pr, reklama_marki_runda mr, reklama_producenta_his ph, reklama_marki_his mh, marki m
+        where
+            m.id_marki = mr.id_marki
+            and m.id_producenta = pr.id_producenta
+            and m.id_marki = mh.id_marki
+            and m.id_producenta = ph.id_producenta
+            and m.czy_utworzona = 't'
+            and aktualna_liczba_sztuk > 0)
+        where rownum = 1
+        order by wart_f_osiagniecia desc);
+
+        insert into zakupy_konsumentow values (nr_rundy, rec.id_konsumenta, wybrana_marka);
+        if wybrana_marka is not null then
+            update marki set aktualna_liczba_sztuk = aktualna_liczba_sztuk - 1 where id_marki = wybrana_marka;
+        end if;
+
+        --commit;
+    END LOOP;
+END ZREALIZUJ_ZAKUPY_V2;
+/
