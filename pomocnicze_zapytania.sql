@@ -1,7 +1,7 @@
 --historia zakupow
-select m.id_marki, k.id_konsumenta,
+select m.id_marki, --k.id_konsumenta,
     (SELECT
-        sum(CASE
+        NVL(sum(CASE
         WHEN numer_rundy IN(4-1, 4-3)
             THEN 2
         WHEN numer_rundy = 4-2
@@ -9,11 +9,11 @@ select m.id_marki, k.id_konsumenta,
         WHEN numer_rundy IN(4-4, 4-5, 4-6)
             THEN 1
         ELSE 0
-        END)/10 AS wartosc
+        END), 0)/10 AS wartosc
     FROM zakupy_konsumentow
-    where id_konsumenta = k.id_konsumenta and id_marki = m.id_marki
+    where id_konsumenta = 1 and id_marki = m.id_marki
     ) as wart
-from marki m, konsumenci k;
+from marki m;--, konsumenci k;
 
 --marketing z ostatniej rundy
 select m.id_producenta, avg(o.wplyw)

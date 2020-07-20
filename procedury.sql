@@ -521,11 +521,10 @@ END POLICZ_MPO_WYBRANE_WYMIARY;
 create or replace PROCEDURE ZREALIZUJ_ZAKUPY_V2 AS
     nr_rundy NUMBER;
     wybrana_marka NUMBER;
-    wspolczynnik_modyfikacji NUMBER;
-    flaga_zakupu CHAR(1) := 'n';
+    liczba_produktow NUMBER;
 BEGIN
     select max(numer_rundy) into nr_rundy from numery_rund;
-
+    select sum(aktualna_liczba_sztuk) into liczba_produktow from marki where czy_utworzona = 't';
 
 
     FOR REC IN ((SELECT
@@ -538,7 +537,11 @@ BEGIN
                     PRZYWIAZANIE_POZIOM_REZERWACJI
                 from
                     konsumenci))
-    LOOP 
+    LOOP
+    
+    if liczba_produktow = 0 then
+        insert into zakupy_konsumentow values (nr_rundy, rec.id_konsumenta, null);
+    else
 
     select id_marki into wybrana_marka from (
         select
@@ -575,7 +578,7 @@ BEGIN
             from marketingi m, rodzaje_marketingu r
             where
                 m.id_rodzaju_marketingu = r.id_rodzaju_marketingu
-                and m.numer_rundy <= nr_rundy
+                and m.numer_rundy > nr_rundy - 6
             group by m.id_marki
         ),
         reklama_producenta_runda as (
@@ -600,8 +603,8 @@ BEGIN
             m.id_marki,
             m.cena_za_sztuke,
             m.jakosc_marki,
-            (0.4*mr.wplyw_marka + 0.6*pr.wplyw_producent) as marketing_runda,
-            (0.4*mh.wplyw_marka_his + 0.6*ph.wplyw_producent_his) as marketing_historia,
+            NVL((0.4*mr.wplyw_marka + 0.6*pr.wplyw_producent), 0) as marketing_runda,
+            NVL((0.4*mh.wplyw_marka_his + 0.6*ph.wplyw_producent_his), 0) as marketing_historia,
             (SELECT
                 NVL(sum(CASE
                 WHEN numer_rundy IN(4-1, 4-3)
@@ -610,29 +613,28 @@ BEGIN
                     THEN 3
                 WHEN numer_rundy IN(4-4, 4-5, 4-6)
                     THEN 1
-                ELSE 0
                 END), 0)/10 AS wart
             FROM zakupy_konsumentow
             where id_konsumenta = rec.id_konsumenta and id_marki = m.id_marki
             ) as historia_zakupow
         from 
-            reklama_producenta_runda pr, reklama_marki_runda mr, reklama_producenta_his ph, reklama_marki_his mh, marki m
+            marki m
+            left join reklama_producenta_runda pr on m.id_producenta = pr.id_producenta
+            left join reklama_marki_runda mr on m.id_marki = mr.id_marki
+            left join reklama_producenta_his ph on m.id_producenta = ph.id_producenta
+            left join reklama_marki_his mh on m.id_marki = mh.id_marki
         where
-            m.id_marki = mr.id_marki
-            and m.id_producenta = pr.id_producenta
-            and m.id_marki = mh.id_marki
-            and m.id_producenta = ph.id_producenta
-            and m.czy_utworzona = 't'
-            and aktualna_liczba_sztuk > 0)
+            m.czy_utworzona = 't'
+            and m.aktualna_liczba_sztuk > 0)
         where rownum = 1
         order by wart_f_osiagniecia desc);
 
         insert into zakupy_konsumentow values (nr_rundy, rec.id_konsumenta, wybrana_marka);
-        if wybrana_marka is not null then
-            update marki set aktualna_liczba_sztuk = aktualna_liczba_sztuk - 1 where id_marki = wybrana_marka;
+        update marki set aktualna_liczba_sztuk = aktualna_liczba_sztuk - 1 where id_marki = wybrana_marka;
+        liczba_produktow := liczba_produktow - 1;
+        
         end if;
 
         --commit;
     END LOOP;
 END ZREALIZUJ_ZAKUPY_V2;
-/
