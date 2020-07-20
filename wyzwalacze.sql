@@ -12,18 +12,6 @@ BEGIN
 END;
 /
 
-create or replace TRIGGER USTAL_WSPOLCZYNNIKI_PRZYWIAZANIA_DO_MARKI 
-AFTER INSERT ON MARKI
-FOR EACH ROW
-BEGIN
-    --ustalenie wspolczynnika przywiazania do marki dla kazdego z klientow
-    FOR REC IN (SELECT id_konsumenta from konsumenci)
-    LOOP
-        insert into PRZYWIAZANIA_DO_MAREK values (rec.id_konsumenta, 1.0, :new.id_marki);
-    END LOOP;
-END;
-/
-
 create or replace TRIGGER SPR_WPROWADZENIE_MARKI_NA_RYNEK
 BEFORE UPDATE OF CZY_UTWORZONA ON MARKI
 FOR EACH ROW
@@ -31,7 +19,7 @@ DECLARE
     koszt NUMBER;
     fundusze_producenta NUMBER;
 BEGIN
-    select koszt_utworzenia_marki into koszt from ustawienia_poczatkowe where aktywna = 'a';
+    select koszt_utworzenia_marki into koszt from ustawienia_poczatkowe where czy_aktywna = 'a';
     select fundusze into fundusze_producenta from producenci where id_producenta = :old.id_producenta;
     
     if fundusze_producenta < koszt then
@@ -47,7 +35,7 @@ DECLARE
     koszt NUMBER;
 BEGIN
     if :new.CZY_UTWORZONA <> :old.CZY_UTWORZONA then
-        select koszt_utworzenia_marki into koszt from ustawienia_poczatkowe where aktywna = 'a';
+        select koszt_utworzenia_marki into koszt from ustawienia_poczatkowe where czy_aktywna = 'a';
         update producenci set fundusze = fundusze - koszt where id_producenta = :old.id_producenta;
     end if;
 END;
@@ -145,13 +133,22 @@ BEFORE INSERT ON MARKETINGI
 FOR EACH ROW
 DECLARE
 koszt NUMBER (15, 0);
-koszt_per_konsument NUMBER (15, 0);
+koszt_per_st_intensywnosci NUMBER (15, 0);
 fundusze_producenta NUMBER;
 BEGIN  
     --obliczenie kosztu
-    select KOSZT_BAZOWY into koszt from RODZAJE_MARKETINGU where ID_RODZAJU_MARKETINGU = :new.ID_RODZAJU_MARKETINGU;
-    select koszta_per_klient into koszt_per_konsument from RODZAJE_MARKETINGU where ID_RODZAJU_MARKETINGU = :new.ID_RODZAJU_MARKETINGU;
-    :new.koszt_marketingu := koszt + koszt_per_konsument * :new.liczba_klientow;
+    select
+        marketing_KOSZT_BAZOWY,
+        marketing_koszt_per_st_intes
+    into
+        koszt,
+        koszt_per_st_intensywnosci
+    from
+        ustawienia_poczatkowe
+    where
+        czy_aktywna = 'a';
+    
+    :new.koszt_marketingu := koszt + koszt_per_st_intensywnosci * :new.intensywnosc_marketingu;
     
     select p.fundusze into fundusze_producenta from producenci p, marki m where m.id_producenta = p.id_producenta and m.id_marki = :new.id_marki;
     if fundusze_producenta < :new.koszt_marketingu then
@@ -211,33 +208,16 @@ BEGIN
 END;
 /
 
-create or replace TRIGGER DZIALANIE_MARKETINGU 
+create or replace TRIGGER POTRACENIE_KOSZTOW_MARKETINGU 
 AFTER INSERT ON MARKETINGI
 FOR EACH ROW
 DECLARE
 id_prod NUMBER (3, 0);
-wspolczynnik_modyfikacji NUMBER (5,3);
 BEGIN
     --okreslenie id producenta
     select id_producenta into id_prod from marki where id_marki = :new.id_marki;
-
     --potracenie kosztow
     update producenci set FUNDUSZE = FUNDUSZE - :new.koszt_marketingu where ID_PRODUCENTA = id_prod;
-
-    --modyfikacja wspolczynnikow przywiazania konsumentow do marek
-    FOR REC IN (select id_konsumenta from konsumenci)
-    LOOP
-        select wplyw_na_docelowa_marke into wspolczynnik_modyfikacji from rodzaje_marketingu where ID_RODZAJU_MARKETINGU = :new.ID_RODZAJU_MARKETINGU;
-        update przywiazania_do_marek set wspolczynnik_przywiazania = wspolczynnik_przywiazania*wspolczynnik_modyfikacji
-            where id_marki = :new.id_marki and id_konsumenta = REC.id_konsumenta;
-
-        select wplyw_na_inne_marki_prod into wspolczynnik_modyfikacji from rodzaje_marketingu where ID_RODZAJU_MARKETINGU = :new.ID_RODZAJU_MARKETINGU;
-        for CUR IN (select m.id_marki from marki m, producenci p where p.id_producenta = m.id_producenta and p.id_producenta = id_prod)
-        loop
-            update przywiazania_do_marek set wspolczynnik_przywiazania = wspolczynnik_przywiazania*wspolczynnik_modyfikacji
-            where id_marki = CUR.id_marki and id_konsumenta = REC.id_konsumenta;
-        end loop;
-    end loop;
 END;
 /
 
@@ -247,9 +227,10 @@ FOR EACH ROW
 DECLARE
     id_prod NUMBER (3, 0);
 BEGIN
+    /*
     OCEN_MARKE(:new.ID_BADANIA_RYNKU, :new.ID_MARKI, :new.ID_GRUPY_KONSUMENTOW, :new.HIS_ZAKUPOW_LICZBA_RUND,
                 :new.UWZGLEDNIC_JAKOSC, :new.UWZGLEDNIC_CENE, :new.UWZGLEDNIC_STOSUNEK_DO_MARKI,
-                :new.UWZG_STOSUNEK_DO_PRODUCENTA);
+                :new.UWZG_STOSUNEK_DO_PRODUCENTA);*/
     
     --okreslenie id producenta
     select id_producenta into id_prod from marki where id_marki = :new.id_marki;

@@ -9,8 +9,8 @@ create or replace PROCEDURE POTRAC_KOSZTY_MAGAZYNOWANIA AS
     liczba_magazynow NUMBER (6, 0);
 BEGIN
     select max(numer_rundy) into nr_rundy from numery_rund;
-    select SPOSOB_NALICZ_KOSZT_MAGAZYN into sposob_nalicz_kosztow from USTAWIENIA_POCZATKOWE where aktywna = 'a';
-    select KOSZT_MAG_SZTUKI_LUB_MAGAZYNU into koszt_mag_sztuki from USTAWIENIA_POCZATKOWE where aktywna = 'a';
+    select SPOSOB_NALICZ_KOSZT_MAGAZYN into sposob_nalicz_kosztow from USTAWIENIA_POCZATKOWE where czy_aktywna = 'a';
+    select KOSZT_MAG_SZTUKI_LUB_MAGAZYNU into koszt_mag_sztuki from USTAWIENIA_POCZATKOWE where czy_aktywna = 'a';
 
     if sposob_nalicz_kosztow = 'l' then
         FOR REC IN (SELECT m.id_marki, m.aktualna_liczba_sztuk, m.ID_PRODUCENTA from marki m where aktualna_liczba_sztuk > 0)
@@ -23,8 +23,8 @@ BEGIN
             insert into magazynowania values (rec.aktualna_liczba_sztuk, koszt, nr_rundy, rec.id_marki);
         END LOOP;
     else
-        select WIELKOSC_POWIERZCHNI_MAG into wielkosc_pow_mag from USTAWIENIA_POCZATKOWE where aktywna = 'a';
-        select UPUST_ZA_KOLEJNY_MAGAZYN into upust_per_magazyn from USTAWIENIA_POCZATKOWE where aktywna = 'a';
+        select WIELKOSC_POWIERZCHNI_MAG into wielkosc_pow_mag from USTAWIENIA_POCZATKOWE where czy_aktywna = 'a';
+        select UPUST_ZA_KOLEJNY_MAGAZYN into upust_per_magazyn from USTAWIENIA_POCZATKOWE where czy_aktywna = 'a';
   
         FOR REC IN (select sum(aktualna_liczba_sztuk) as liczba_sztuk, ID_PRODUCENTA from marki where aktualna_liczba_sztuk > 0 group by ID_PRODUCENTA)
         LOOP
@@ -61,65 +61,10 @@ BEGIN
 END LICZ_PRZYCHOD;
 /
 
-create or replace PROCEDURE ROZPOCZNIJ_RUNDE AS
---procedura uruchamiana rozpoczyna nowa runde poprzez zwiekszenie licznika rund
-BEGIN
-  --przywrocenie producentom mozliwosci wykonywania dzialan
-  update producenci set czy_spasowal = 'n';
-
-  --realizacja zakupow klientow
-  ZREALIZUJ_ZAKUPY;
-  
-  --przeliczanie i dodanie przychodu ze sprzedazy do kont producentow
-  LICZ_PRZYCHOD;
-
-  --koszty magazynowania na kolejna runde
-  POTRAC_KOSZTY_MAGAZYNOWANIA;
-  
-  --zwiekszenie licznika rund - ! czy z sekwencja ma to sens
-  insert into numery_rund values (null);
-  --commit;
-END ROZPOCZNIJ_RUNDE;
-/
-
-create or replace PROCEDURE ROZPOCZNIJ_GRE AS
-    czy_wstawic_jakosci char(1);
-BEGIN
-    --sprawdzenie czy wybrana opcja istnieje
-    declare
-        aktywna_opcja number;
-    BEGIN
-        select count(numer_zestawu) into aktywna_opcja from USTAWIENIA_POCZATKOWE where aktywna = 'a';
-        if aktywna_opcja <> 1 then
-            raise_application_error(-20805, 'Brak aktywnego zestawu ustawien poczatkowych');
-        end if;
-    END;
-    --czyszczenie zawartosci po poprzedniej grze
-    WYCZYSC_TABELE;
-    --restartowanie sekwencji
-    ZRESTARTUJ_SEKWENCJE;
-    --wstawienie domyslnych wartosci jakosci marki wraz z referencyjnymi kosztami produkcji jesli taka opcja zostala wybrana w ustawieniach poczatkowych
-    select czy_jakosci_marek_domyslne into czy_wstawic_jakosci from ustawienia_poczatkowe where aktywna = 'a';
-    if czy_wstawic_jakosci = 't' then
-        DELETE FROM jakosci_marek CASCADE;
-        WSTAW_DOMYSLNE_JAKOSCI_MAREK;
-    end if;
-    --stworzenie konsumentow
-    GENERUJ_KONSUMENTOW;
-    --stworzenie bazowych grup konsumentow
-    GENERUJ_GRUPY_KONSUMENTOW;
-    --restartowanie parametrow producentow, czyli graczy
-    RESTART_PARAMETROW_PRODUCENTOW;
-    --rozpocznij pierwsza runde
-    insert into numery_rund values (1);
-    commit;
-END ROZPOCZNIJ_GRE;
-/
-
 create or replace PROCEDURE RESTART_PARAMETROW_PRODUCENTOW AS 
     pocz_fundusze number (10, 0);
 BEGIN
-    select poczatkowe_fundusze into pocz_fundusze from ustawienia_poczatkowe where aktywna = 'a';
+    select poczatkowe_fundusze into pocz_fundusze from ustawienia_poczatkowe where czy_aktywna = 'a';
     update PRODUCENCI set FUNDUSZE = pocz_fundusze, CZY_SPASOWAL = 'n';
     commit;
 END RESTART_PARAMETROW_PRODUCENTOW;
@@ -201,7 +146,7 @@ IS
     liczebnosc_grupy NUMBER;
     liczebnosc_konsumentow NUMBER;
 BEGIN
-    select liczba_konsumentow into liczebnosc_konsumentow from ustawienia_poczatkowe where aktywna = 'a';
+    select liczba_konsumentow into liczebnosc_konsumentow from ustawienia_poczatkowe where czy_aktywna = 'a';
     liczebnosc_grupy := ceil(liczebnosc_konsumentow / 5);
     
     insert into grupy_konsumentow values (null, liczebnosc_grupy*1000, liczebnosc_grupy*500, null);
@@ -249,8 +194,10 @@ IS
     min_roznica_cena NUMBER;
     max_roznica_jakosc NUMBER;
     min_roznica_jakosc NUMBER;
-    max_roznica_przyw NUMBER;
-    min_roznica_przyw NUMBER;
+    max_roznica_his_zakupow NUMBER;
+    min_roznica_his_zakupow NUMBER;
+    max_roznica_marketing NUMBER;
+    min_roznica_marketing NUMBER;
     krok_cena NUMBER;
     krok_jakosc NUMBER;
     
@@ -263,8 +210,10 @@ BEGIN
         wym_kons_min_roznica_cena,
         wym_kons_max_roznica_jakosc,
         wym_kons_min_roznica_jakosc,
-        wym_kons_max_roznica_przyw,
-        wym_kons_min_roznica_przyw
+        wym_kons_max_roznica_his_zak,
+        wym_kons_min_roznica_his_zak,
+        wym_kons_max_roznica_marketing,
+        wym_kons_min_roznica_marketing
     into
         liczba_kons,
         max_cena,
@@ -273,9 +222,11 @@ BEGIN
         min_roznica_cena,
         max_roznica_jakosc,
         min_roznica_jakosc,
-        max_roznica_przyw,
-        min_roznica_przyw
-    from ustawienia_poczatkowe where aktywna = 'a';
+        max_roznica_his_zakupow,
+        min_roznica_his_zakupow,
+        max_roznica_marketing,
+        min_roznica_marketing
+    from ustawienia_poczatkowe where czy_aktywna = 'a';
     
     select
         max(jakosc_marki),
@@ -292,7 +243,7 @@ BEGIN
     FOR i IN liczba_kons..1 LOOP
         cena_aspiracja := DBMS_RANDOM.value(min_cena + (i-1)*krok_cena, min_cena + (i-1)*krok_cena + max_roznica_cena - min_roznica_cena);
         jakosc_rezerwacja := DBMS_RANDOM.value(min_jakosc + (i-1)*krok_jakosc, min_jakosc + (i-1)*krok_jakosc + max_roznica_jakosc - min_roznica_jakosc);
-        przywiazanie_rezerwacja := DBMS_RANDOM.value(min_przywiazanie, max_przywiazanie - min_roznica_przyw);
+        przywiazanie_rezerwacja := DBMS_RANDOM.value(min_przywiazanie, max_przywiazanie - min_roznica_his_zakupow);
         insert into konsumenci values (i,
                             
                             cena_aspiracja,                                             --cena
@@ -301,12 +252,13 @@ BEGIN
                             DBMS_RANDOM.value(jakosc_rezerwacja + min_roznica_jakosc, min_jakosc + (i-1)*krok_jakosc + max_roznica_jakosc),                  --jakosc
                             jakosc_rezerwacja,
                             
-                            DBMS_RANDOM.value(przywiazanie_rezerwacja + min_roznica_przyw, max_przywiazanie),       --przywiazanie do marki
+                            DBMS_RANDOM.value(przywiazanie_rezerwacja + min_roznica_his_zakupow, max_przywiazanie),       --przywiazanie do marki
                             przywiazanie_rezerwacja, 
                             
                             DBMS_RANDOM.value(0.1, 0.99)); --podatnosc na marketing
     END LOOP;
 END GENERUJ_KONSUMENTOW;
+/
 
 create or replace PROCEDURE WSTAW_DOMYSLNE_JAKOSCI_MAREK
 IS
@@ -319,77 +271,7 @@ BEGIN
    commit;
 END WSTAW_DOMYSLNE_JAKOSCI_MAREK;
 /
-
-create or replace PROCEDURE ZREALIZUJ_ZAKUPY AS
-    nr_rundy NUMBER;
-    wybrana_marka NUMBER;
-    wspolczynnik_modyfikacji NUMBER;
-    ZAKUP_WPLYW_NA_DOCELOWA_MARKE NUMBER;
-    ZAKUP_WPLYW_NA_INNE_MARKI_PRO NUMBER;
-    BRAK_ZAKUPU_WPLYW_NA_MARKE NUMBER;
-    NIEZASPOKOJONY_POPYT_WPLYW NUMBER;
-    flaga_zakupu CHAR(1) := 'n';
-BEGIN
-    select max(numer_rundy) into nr_rundy from numery_rund;
-    select
-        u.ZAKUP_WPLYW_NA_DOCELOWA_MARKE,
-        u.ZAKUP_WPLYW_NA_INNE_MARKI_PRO,
-        u.BRAK_ZAKUPU_WPLYW_NA_MARKE,
-        u.NIEZASPOKOJONY_POPYT_WPLYW
-    into
-        ZAKUP_WPLYW_NA_DOCELOWA_MARKE,
-        ZAKUP_WPLYW_NA_INNE_MARKI_PRO,
-        BRAK_ZAKUPU_WPLYW_NA_MARKE,
-        NIEZASPOKOJONY_POPYT_WPLYW 
-    from ustawienia_poczatkowe u where aktywna = 'a';
-
-    
-    FOR REC IN ((SELECT id_konsumenta from konsumenci))
-    LOOP  
-        FOR MAR IN (SELECT id_konsumenta, id_producenta, id_marki, aktualna_liczba_sztuk, POLICZ_MPO_WYBRANE_WYMIARY(
-                cena, 't',
-                jakosc, 't',
-                przywiazanie_do_marki, 't',
-                przywiazanie_do_producenta, 't'
-            ) as f_osiagniecia_oc_marki from WARTOSCI_FUNKCJI_OSIAGNIECIA_MPO_P
-            where id_konsumenta = rec.id_konsumenta and czy_utworzona = 't'
-            order by f_osiagniecia_oc_marki desc)
-        LOOP
-            if mar.aktualna_liczba_sztuk > 0 then
-                insert into zakupy_konsumentow values (nr_rundy, rec.id_konsumenta, mar.id_marki);
-                update marki set aktualna_liczba_sztuk = aktualna_liczba_sztuk - 1 where id_marki = mar.id_marki;
-                --zwiekszenie przywiazania konsumenta do marki wynikajace z zakupu produktu
-                update PRZYWIAZANIA_DO_MAREK set WSPOLCZYNNIK_PRZYWIAZANIA = WSPOLCZYNNIK_PRZYWIAZANIA*ZAKUP_WPLYW_NA_DOCELOWA_MARKE
-                    where ID_KONSUMENTA = rec.ID_KONSUMENTA and id_marki = mar.id_marki;
-                --zwiekszenie przywiazania konsumenta do innych marek producenta wynikajace z zakupu produktu
-                update PRZYWIAZANIA_DO_MAREK set WSPOLCZYNNIK_PRZYWIAZANIA = WSPOLCZYNNIK_PRZYWIAZANIA*ZAKUP_WPLYW_NA_INNE_MARKI_PRO
-                    where ID_KONSUMENTA = rec.ID_KONSUMENTA and id_marki IN (select id_marki from marki
-                                                                            where id_producenta = mar.id_producenta and id_marki != mar.id_marki);
-                --zminiejszenie przywiazania konsumenta do pozosytalych marek wynikajace z odzwyczajania/zapominania o marce
-                update PRZYWIAZANIA_DO_MAREK set WSPOLCZYNNIK_PRZYWIAZANIA = WSPOLCZYNNIK_PRZYWIAZANIA*BRAK_ZAKUPU_WPLYW_NA_MARKE
-                    where ID_KONSUMENTA = rec.ID_KONSUMENTA and id_marki IN (select id_marki from marki
-                                                                            where id_producenta != mar.id_producenta and id_marki != mar.id_marki);
-                flaga_zakupu := 't';
-                exit;
-            else
-                update PRZYWIAZANIA_DO_MAREK set WSPOLCZYNNIK_PRZYWIAZANIA = WSPOLCZYNNIK_PRZYWIAZANIA*NIEZASPOKOJONY_POPYT_WPLYW
-                    where ID_KONSUMENTA = rec.ID_KONSUMENTA and id_marki = mar.id_marki;
-            end if;
-
-        END LOOP;
-        
-        if flaga_zakupu = 'n' then
-            insert into zakupy_konsumentow values (nr_rundy, rec.id_konsumenta, null);
-            --zminiejszenie przywiazania konsumenta do pozosytalych marek wynikajace z odzwyczajania/zapominania o marce
-            update PRZYWIAZANIA_DO_MAREK set WSPOLCZYNNIK_PRZYWIAZANIA = WSPOLCZYNNIK_PRZYWIAZANIA*BRAK_ZAKUPU_WPLYW_NA_MARKE
-                    where ID_KONSUMENTA = rec.ID_KONSUMENTA;
-        end if;
-        
-        --commit;
-    END LOOP;
-END ZREALIZUJ_ZAKUPY;
-/
-
+/*
 create or replace PROCEDURE OCEN_MARKE(BADANIE_RYNKU NUMBER, MARKA NUMBER, GRUPA_KONSUMENTOW NUMBER, DLUGOSC_HIS_ZAKUPOW NUMBER,
                                         UWZGLEDNIC_JAKOSC CHAR, UWZGLEDNIC_CENE CHAR, UWZGLEDNIC_STOSUNEK_DO_MARKI CHAR,
                                         UWZG_STOSUNEK_DO_PRODUCENTA CHAR
@@ -461,7 +343,7 @@ BEGIN
     end loop;
 END OCEN_MARKE;
 /
-
+*/
 create or replace FUNCTION POLICZ_WYMIAR_MPO (POZIOM_ASPIRACJI NUMBER, POZIOM_REZERWACJI NUMBER, WARTOSC_PARAMETRU NUMBER)
 RETURN NUMBER
 AS
@@ -479,7 +361,7 @@ BEGIN
     return wartosc_f_osiagniecia;
 END POLICZ_WYMIAR_MPO;
 /
-
+/*
 create or replace FUNCTION POLICZ_MPO_WYBRANE_WYMIARY (
                     CENA NUMBER, CZY_UWZGL_CENE CHAR,
                     JAKOSC NUMBER, CZY_UWZGL_JAKOSC CHAR,
@@ -517,8 +399,8 @@ BEGIN
     return wartosc_f_osiagniecia;
 END POLICZ_MPO_WYBRANE_WYMIARY;
 /
-
-create or replace PROCEDURE ZREALIZUJ_ZAKUPY_V2 AS
+*/
+create or replace PROCEDURE ZREALIZUJ_ZAKUPY AS
     nr_rundy NUMBER;
     wybrana_marka NUMBER;
     liczba_produktow NUMBER;
@@ -564,21 +446,19 @@ BEGIN
         with reklama_marki_runda as(
             select
                 m.id_marki,
-                NVL(sum(wplyw_na_docelowa_marke),0) as wplyw_marka
-            from marketingi m, rodzaje_marketingu r
+                NVL(sum(intensywnosc_marketingu),0) as wplyw_marka
+            from marketingi m
             where
-                m.id_rodzaju_marketingu = r.id_rodzaju_marketingu
-                and m.numer_rundy = nr_rundy
+                m.numer_rundy = nr_rundy
             group by m.id_marki
         ),
         reklama_marki_his as(
             select
                 m.id_marki,
-                NVL(sum(wplyw_na_docelowa_marke), 0) as wplyw_marka_his
-            from marketingi m, rodzaje_marketingu r
+                NVL(sum(intensywnosc_marketingu), 0) as wplyw_marka_his
+            from marketingi m
             where
-                m.id_rodzaju_marketingu = r.id_rodzaju_marketingu
-                and m.numer_rundy > nr_rundy - 6
+                m.numer_rundy > nr_rundy - 6
             group by m.id_marki
         ),
         reklama_producenta_runda as (
@@ -637,4 +517,60 @@ BEGIN
 
         --commit;
     END LOOP;
-END ZREALIZUJ_ZAKUPY_V2;
+END ZREALIZUJ_ZAKUPY;
+/
+
+create or replace PROCEDURE ROZPOCZNIJ_RUNDE AS
+--procedura uruchamiana rozpoczyna nowa runde poprzez zwiekszenie licznika rund
+BEGIN
+  --przywrocenie producentom mozliwosci wykonywania dzialan
+  update producenci set czy_spasowal = 'n';
+
+  --realizacja zakupow klientow
+  ZREALIZUJ_ZAKUPY;
+  
+  --przeliczanie i dodanie przychodu ze sprzedazy do kont producentow
+  LICZ_PRZYCHOD;
+
+  --koszty magazynowania na kolejna runde
+  POTRAC_KOSZTY_MAGAZYNOWANIA;
+  
+  --zwiekszenie licznika rund - ! czy z sekwencja ma to sens
+  insert into numery_rund values (null);
+  --commit;
+END ROZPOCZNIJ_RUNDE;
+/
+
+create or replace PROCEDURE ROZPOCZNIJ_GRE AS
+    czy_wstawic_jakosci char(1);
+BEGIN
+    --sprawdzenie czy wybrana opcja istnieje
+    declare
+        czy_aktywna_opcja number;
+    BEGIN
+        select count(numer_zestawu) into czy_aktywna_opcja from USTAWIENIA_POCZATKOWE where czy_aktywna = 'a';
+        if czy_aktywna_opcja <> 1 then
+            raise_application_error(-20805, 'Brak aktywnego zestawu ustawien poczatkowych');
+        end if;
+    END;
+    --czyszczenie zawartosci po poprzedniej grze
+    WYCZYSC_TABELE;
+    --restartowanie sekwencji
+    ZRESTARTUJ_SEKWENCJE;
+    --wstawienie domyslnych wartosci jakosci marki wraz z referencyjnymi kosztami produkcji jesli taka opcja zostala wybrana w ustawieniach poczatkowych
+    select czy_jakosci_marek_domyslne into czy_wstawic_jakosci from ustawienia_poczatkowe where czy_aktywna = 'a';
+    if czy_wstawic_jakosci = 't' then
+        DELETE FROM jakosci_marek CASCADE;
+        WSTAW_DOMYSLNE_JAKOSCI_MAREK;
+    end if;
+    --stworzenie konsumentow
+    GENERUJ_KONSUMENTOW;
+    --stworzenie bazowych grup konsumentow
+    GENERUJ_GRUPY_KONSUMENTOW;
+    --restartowanie parametrow producentow, czyli graczy
+    RESTART_PARAMETROW_PRODUCENTOW;
+    --rozpocznij pierwsza runde
+    insert into numery_rund values (1);
+    commit;
+END ROZPOCZNIJ_GRE;
+/

@@ -1,1 +1,0 @@
-insert into ustawienia_poczatkowe values (1, 100, 't', 20, 10, 100000);
