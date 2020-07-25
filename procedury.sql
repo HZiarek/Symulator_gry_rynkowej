@@ -179,17 +179,21 @@ END GENERUJ_GRUPY_KONSUMENTOW;
 
 create or replace PROCEDURE GENERUJ_KONSUMENTOW
 IS
-    liczba_kons number(10, 0);
-    cena_aspiracja number (5, 0);
-    jakosc_rezerwacja number (2, 0);
-    przywiazanie_rezerwacja number (4, 2);
+    max_his_zakupow NUMBER := 1.0;
+    min_his_zakupow NUMBER := 0.0;
+    max_marketing NUMBER := 100;
+    min_marketing NUMBER := 0;
     
+    liczba_kons number(8, 0);
+    cena_aspiracja number;
+    jakosc_rezerwacja number (2, 0);
+    his_zakupow_rezerwacja number;
+    marketing_rezerwacja number;
+
     max_cena NUMBER;
     min_cena NUMBER;
     max_jakosc NUMBER;
     min_jakosc NUMBER;
-    max_przywiazanie NUMBER := 2.0;
-    min_przywiazanie NUMBER := 1.0;
     max_roznica_cena NUMBER;
     min_roznica_cena NUMBER;
     max_roznica_jakosc NUMBER;
@@ -200,7 +204,7 @@ IS
     min_roznica_marketing NUMBER;
     krok_cena NUMBER;
     krok_jakosc NUMBER;
-    
+
 BEGIN
     select
         liczba_konsumentow,
@@ -227,7 +231,7 @@ BEGIN
         max_roznica_marketing,
         min_roznica_marketing
     from ustawienia_poczatkowe where czy_aktywna = 'a';
-    
+
     select
         max(jakosc_marki),
         min(jakosc_marki)
@@ -235,27 +239,31 @@ BEGIN
         max_jakosc,
         min_jakosc
     from jakosci_marek;
-    
+
     --krok obliczany ze wzoru na sume ciagu arytmetycznego
     krok_cena := 2*(max_cena - min_cena)/(liczba_kons*(liczba_kons - 1));
     krok_jakosc := 2*(max_jakosc - min_jakosc)/(liczba_kons*(liczba_kons - 1));
-    
+
     FOR i IN liczba_kons..1 LOOP
         cena_aspiracja := DBMS_RANDOM.value(min_cena + (i-1)*krok_cena, min_cena + (i-1)*krok_cena + max_roznica_cena - min_roznica_cena);
         jakosc_rezerwacja := DBMS_RANDOM.value(min_jakosc + (i-1)*krok_jakosc, min_jakosc + (i-1)*krok_jakosc + max_roznica_jakosc - min_roznica_jakosc);
-        przywiazanie_rezerwacja := DBMS_RANDOM.value(min_przywiazanie, max_przywiazanie - min_roznica_his_zakupow);
+        his_zakupow_rezerwacja := DBMS_RANDOM.value(min_his_zakupow, max_his_zakupow - min_roznica_his_zakupow);
+        marketing_rezerwacja := DBMS_RANDOM.value(min_marketing, max_marketing - min_marketing);
         insert into konsumenci values (i,
-                            
+
                             cena_aspiracja,                                             --cena
                             DBMS_RANDOM.value(cena_aspiracja + min_roznica_cena, min_cena + (i-1)*krok_cena + max_roznica_cena),
-                            
-                            DBMS_RANDOM.value(jakosc_rezerwacja + min_roznica_jakosc, min_jakosc + (i-1)*krok_jakosc + max_roznica_jakosc),                  --jakosc
+
+                            DBMS_RANDOM.value(jakosc_rezerwacja + min_roznica_jakosc, min_jakosc + (i-1)*krok_jakosc + max_roznica_jakosc),--jakosc
                             jakosc_rezerwacja,
-                            
-                            DBMS_RANDOM.value(przywiazanie_rezerwacja + min_roznica_his_zakupow, max_przywiazanie),       --przywiazanie do marki
-                            przywiazanie_rezerwacja, 
-                            
-                            DBMS_RANDOM.value(0.1, 0.99)); --podatnosc na marketing
+
+                            DBMS_RANDOM.value(his_zakupow_rezerwacja + min_roznica_his_zakupow, 
+                                                least(max_his_zakupow, his_zakupow_rezerwacja + max_roznica_his_zakupow)),  --historia zakupow
+                            his_zakupow_rezerwacja,
+
+                            DBMS_RANDOM.value(marketing_rezerwacja + min_roznica_marketing,
+                                                least(max_marketing, marketing_rezerwacja + max_roznica_marketing)),  --marketing
+                            marketing_rezerwacja);
     END LOOP;
 END GENERUJ_KONSUMENTOW;
 /
@@ -271,7 +279,7 @@ BEGIN
    commit;
 END WSTAW_DOMYSLNE_JAKOSCI_MAREK;
 /
-/*
+
 create or replace PROCEDURE OCEN_MARKE(BADANIE_RYNKU NUMBER, MARKA NUMBER, GRUPA_KONSUMENTOW NUMBER, DLUGOSC_HIS_ZAKUPOW NUMBER,
                                         UWZGLEDNIC_JAKOSC CHAR, UWZGLEDNIC_CENE CHAR, UWZGLEDNIC_STOSUNEK_DO_MARKI CHAR,
                                         UWZG_STOSUNEK_DO_PRODUCENTA CHAR
@@ -286,7 +294,7 @@ BEGIN
     --jesli badana marka nie zostala jeszcze utworzona to liczebnosc zbioru analizowanych marek musi zostac zwiekszona o 1
     select count(id_marki) into czy_docelowa_marka_utworzona from marki where czy_utworzona = 'n' and id_marki = marka;
     liczba_wszystkich_marek := liczba_wszystkich_marek + czy_docelowa_marka_utworzona;
-    
+    /*
     FOR REC IN ((
     select id_konsumenta, sum(f_osiagniecia) as liczba_gorszych_marek from
     (
@@ -340,10 +348,10 @@ BEGIN
             end loop;
             --commit;
         end if;
-    end loop;
+    end loop;*/
 END OCEN_MARKE;
 /
-*/
+
 create or replace FUNCTION POLICZ_WYMIAR_MPO (POZIOM_ASPIRACJI NUMBER, POZIOM_REZERWACJI NUMBER, WARTOSC_PARAMETRU NUMBER)
 RETURN NUMBER
 AS
@@ -361,12 +369,13 @@ BEGIN
     return wartosc_f_osiagniecia;
 END POLICZ_WYMIAR_MPO;
 /
-/*
+
 create or replace FUNCTION POLICZ_MPO_WYBRANE_WYMIARY (
                     CENA NUMBER, CZY_UWZGL_CENE CHAR,
                     JAKOSC NUMBER, CZY_UWZGL_JAKOSC CHAR,
-                    PRZYWIAZANIE_DO_MARKI NUMBER, CZY_UWZGL_PRZYWIAZANIE_DO_MARKI CHAR,
-                    PRZYWIAZANIE_DO_PRODUCENTA NUMBER, CZY_UWZGL_PRZYWIAZANIE_DO_PRODUCENTA CHAR)
+                    HISTORIA_ZAKUPOW NUMBER, CZY_UWZGL_HIS_ZAKUPOW CHAR,
+                    MARKETING_RUNDA NUMBER, CZY_UWZGL_MARKETING_RUNDA CHAR,
+                    MARKETING_HISTORIA NUMBER, CZY_UWZGL_MARKETING_HISTORIA CHAR)
 RETURN NUMBER
 AS
     epsilon NUMBER := 0.01;
@@ -384,14 +393,19 @@ BEGIN
         minimum := least(jakosc, minimum); 
     end if;
     
-    if CZY_UWZGL_przywiazanie_do_marki = 't' then
-        suma := suma + przywiazanie_do_marki;
-        minimum := least(przywiazanie_do_marki, minimum); 
+    if CZY_UWZGL_HIS_ZAKUPOW = 't' then
+        suma := suma + HISTORIA_ZAKUPOW;
+        minimum := least(HISTORIA_ZAKUPOW, minimum); 
     end if;
     
-    if CZY_UWZGL_przywiazanie_do_producenta = 't' then
-        suma := suma + przywiazanie_do_producenta;
-        minimum := least(przywiazanie_do_producenta, minimum); 
+    if CZY_UWZGL_MARKETING_RUNDA = 't' then
+        suma := suma + MARKETING_RUNDA;
+        minimum := least(MARKETING_RUNDA, minimum); 
+    end if;
+    
+    if CZY_UWZGL_MARKETING_HISTORIA = 't' then
+        suma := suma + MARKETING_HISTORIA;
+        minimum := least(MARKETING_HISTORIA, minimum); 
     end if;
     
     wartosc_f_osiagniecia := minimum + epsilon * suma;
@@ -399,7 +413,7 @@ BEGIN
     return wartosc_f_osiagniecia;
 END POLICZ_MPO_WYBRANE_WYMIARY;
 /
-*/
+
 create or replace PROCEDURE ZREALIZUJ_ZAKUPY AS
     nr_rundy NUMBER;
     wybrana_marka NUMBER;
@@ -415,8 +429,10 @@ BEGIN
                     CENA_POZIOM_REZERWACJI,
                     JAKOSC_POZIOM_ASPIRACJI,
                     JAKOSC_POZIOM_REZERWACJI,
-                    PRZYWIAZANIE_POZIOM_ASPIRACJI,
-                    PRZYWIAZANIE_POZIOM_REZERWACJI
+                    HIS_ZAKUPOW_POZIOM_ASPIRACJI,
+                    HIS_ZAKUPOW_POZIOM_REZERWACJI,
+                    MARKETING_POZIOM_ASPIRACJI,
+                    MARKETING_POZIOM_REZERWACJI
                 from
                     konsumenci))
     LOOP
@@ -432,15 +448,15 @@ BEGIN
             least(
                 POLICZ_WYMIAR_MPO(rec.cena_poziom_aspiracji, rec.cena_poziom_rezerwacji, cena_za_sztuke),
                 POLICZ_WYMIAR_MPO(rec.jakosc_poziom_aspiracji, rec.jakosc_poziom_rezerwacji, jakosc_marki),
-                POLICZ_WYMIAR_MPO(rec.przywiazanie_poziom_aspiracji, rec.przywiazanie_poziom_rezerwacji, marketing_runda),
-                POLICZ_WYMIAR_MPO(rec.przywiazanie_poziom_aspiracji, rec.przywiazanie_poziom_rezerwacji, marketing_historia),
-                POLICZ_WYMIAR_MPO(0.2, 1, historia_zakupow))
+                POLICZ_WYMIAR_MPO(rec.marketing_poziom_aspiracji, rec.marketing_poziom_rezerwacji, marketing_runda),
+                POLICZ_WYMIAR_MPO(rec.marketing_poziom_aspiracji, rec.marketing_poziom_rezerwacji, marketing_historia),
+                POLICZ_WYMIAR_MPO(rec.his_zakupow_poziom_aspiracji, rec.his_zakupow_poziom_rezerwacji, historia_zakupow))
             + 0.01 * (
                 POLICZ_WYMIAR_MPO(rec.cena_poziom_aspiracji, rec.cena_poziom_rezerwacji, cena_za_sztuke) +
                 POLICZ_WYMIAR_MPO(rec.jakosc_poziom_aspiracji, rec.jakosc_poziom_rezerwacji, jakosc_marki) +
-                POLICZ_WYMIAR_MPO(rec.przywiazanie_poziom_aspiracji, rec.przywiazanie_poziom_rezerwacji, marketing_runda) +
-                POLICZ_WYMIAR_MPO(rec.przywiazanie_poziom_aspiracji, rec.przywiazanie_poziom_rezerwacji, marketing_historia) +
-                POLICZ_WYMIAR_MPO(0.2, 1, historia_zakupow)
+                POLICZ_WYMIAR_MPO(rec.marketing_poziom_aspiracji, rec.marketing_poziom_rezerwacji, marketing_runda) +
+                POLICZ_WYMIAR_MPO(rec.marketing_poziom_aspiracji, rec.marketing_poziom_rezerwacji, marketing_historia) +
+                POLICZ_WYMIAR_MPO(rec.his_zakupow_poziom_aspiracji, rec.his_zakupow_poziom_rezerwacji, historia_zakupow)
             ) as wart_f_osiagniecia
         from(                  
         with reklama_marki_runda as(

@@ -53,8 +53,8 @@ BEGIN
     EXCEPTION
     --przechwycenie wyjatku naruszenia wiezow integralnosci
     --taki blad moze sie pojawic w sytuacji gdy w danej rundzie cena zostala juz raz zmieniona,
-    --poniewaz kluczem glownym tabeli historia cen jest para numer_rundy oraz id_marki
-    --nie ma sensu tworzyc oddzielnego identyfikatora i zapamietywac wszystkich zmiany, poniewaz ostatecznie
+    --poniewaz kluczem glownym tabeli HISTORIE_CEN jest para numer_rundy oraz id_marki
+    --nie ma sensu tworzyc oddzielnego identyfikatora i zapamietywac wszystkich zmian, poniewaz ostatecznie
     --znaczenie ma tylko ostatnia zmiana ceny w danej rundzie, ta ktora bedzie wplywala na zakup konsumenta
         WHEN DUP_VAL_ON_INDEX
         THEN
@@ -139,7 +139,7 @@ BEGIN
     --obliczenie kosztu
     select
         marketing_KOSZT_BAZOWY,
-        marketing_koszt_per_st_intes
+        marketing_koszt_per_st_intens
     into
         koszt,
         koszt_per_st_intensywnosci
@@ -227,15 +227,31 @@ FOR EACH ROW
 DECLARE
     id_prod NUMBER (3, 0);
 BEGIN
-    /*
     OCEN_MARKE(:new.ID_BADANIA_RYNKU, :new.ID_MARKI, :new.ID_GRUPY_KONSUMENTOW, :new.HIS_ZAKUPOW_LICZBA_RUND,
-                :new.UWZGLEDNIC_JAKOSC, :new.UWZGLEDNIC_CENE, :new.UWZGLEDNIC_STOSUNEK_DO_MARKI,
-                :new.UWZG_STOSUNEK_DO_PRODUCENTA);*/
+                :new.UWZGLEDNIC_JAKOSC,
+                :new.UWZGLEDNIC_CENE,
+                :new.UWZGLEDNIC_HIS_ZAKUPOW,
+                :new.UWZG_MARKETING_OST_RUNDA,
+                :new.UWZGLEDNIC_MARKETING
+                );
     
     --okreslenie id producenta
     select id_producenta into id_prod from marki where id_marki = :new.id_marki;
 
     --potracenie kosztow
     update producenci set FUNDUSZE = FUNDUSZE - :new.koszt_badania_rynku where ID_PRODUCENTA = id_prod;
+END;
+/
+
+create or replace TRIGGER SPR_CZY_JEST_1_AKTYWNY_ZESTAW
+BEFORE INSERT OR UPDATE OF czy_aktywna ON USTAWIENIA_POCZATKOWE
+for each row
+DECLARE
+    liczba_aktywnych_opcji number;
+BEGIN
+    select count(numer_zestawu) into liczba_aktywnych_opcji from USTAWIENIA_POCZATKOWE where czy_aktywna = 'a';
+    if :new.czy_aktywna = 'a' and liczba_aktywnych_opcji <> 0 then
+        raise_application_error(-20806, 'Moze byc maksymalnie jeden aktywny zestaw ustawien poczatkowych');
+    end if;
 END;
 /

@@ -2,8 +2,8 @@ CREATE OR REPLACE VIEW MARKI_P
 AS SELECT 
     m.ID_MARKI,
     m.NAZWA_MARKI,
-    m.KOSZT_PRODUKCJI_SZTUKI,
-    m.CENA_ZA_SZTUKE,
+    TO_CHAR(m.KOSZT_PRODUKCJI_SZTUKI/100, '99999999999990.99') AS KOSZT_PRODUKCJI_SZTUKI,
+    TO_CHAR(m.CENA_ZA_SZTUKE/100, '99999999999990.99') AS CENA_ZA_SZTUKE,
     m.JAKOSC_MARKI,
     m.CZY_UTWORZONA,
     m.AKTUALNA_LICZBA_SZTUK
@@ -190,7 +190,7 @@ WHERE
     
 CREATE OR REPLACE VIEW SPRZEDAZ_P
 AS SELECT
-    zak.numer_rundy, mar.NAZWA_MARKI, mar.id_producenta, zak.wolumen, zak.wolumen*ceny.cena as przychod
+    zak.numer_rundy, mar.NAZWA_MARKI, mar.id_producenta, zak.wolumen, TO_CHAR((zak.wolumen*ceny.cena)/100, '99999999999990.99') as przychod
 from
     (--zapytanie, ktore kazdej parze (marka, runda) przypisuje cene marki w danej rundzie
     select m.id_marki, n.numer_rundy,
