@@ -39,8 +39,8 @@ BEGIN
     wartosc_f_osiagniecia := minimum + epsilon * suma;
 
     return wartosc_f_osiagniecia;
-END POLICZ_MPO_WYBRANE_WYMIARY;/
-
+END POLICZ_MPO_WYBRANE_WYMIARY;
+/
 
 create or replace FUNCTION POLICZ_WYMIAR_MPO (POZIOM_ASPIRACJI NUMBER, POZIOM_REZERWACJI NUMBER, WARTOSC_PARAMETRU NUMBER)
 RETURN NUMBER
@@ -57,8 +57,8 @@ BEGIN
     przedzial_3 := niezadowolenie*(wartosc_parametru - poziom_rezerwacji)/(poziom_aspiracji - poziom_rezerwacji);
     wartosc_f_osiagniecia := least (przedzial_1, przedzial_2, przedzial_3);
     return wartosc_f_osiagniecia;
-END POLICZ_WYMIAR_MPO;/
-
+END POLICZ_WYMIAR_MPO;
+/
 
 create or replace PROCEDURE SPR_CZY_ISTNIEJE_AKTYWNY_ZES_USTAWIEN AS
 liczba_aktywnych_opcji number;
@@ -78,8 +78,8 @@ BEGIN
             from (select numer_zestawu from ustawienia_poczatkowe where rownum = 1 order by numer_zestawu);
         update USTAWIENIA_POCZATKOWE set czy_aktywna = 'a' where numer_zestawu = nr_zestawu;
     end if;
-END SPR_CZY_ISTNIEJE_AKTYWNY_ZES_USTAWIEN;/
-
+END SPR_CZY_ISTNIEJE_AKTYWNY_ZES_USTAWIEN;
+/
 
 create or replace PROCEDURE GENERUJ_KONSUMENTOW
 IS
@@ -170,8 +170,8 @@ BEGIN
                                                 least(max_marketing, marketing_rezerwacja + max_roznica_marketing)),  --marketing
                             marketing_rezerwacja);
     END LOOP;
-END GENERUJ_KONSUMENTOW;/
-
+END GENERUJ_KONSUMENTOW;
+/
 
 create or replace PROCEDURE GENERUJ_GRUPY_KONSUMENTOW
 IS
@@ -206,8 +206,8 @@ BEGIN
         insert into PRZYNALEZNOSCI_DO_GRUP values (i, id_grupy_konsumentow_seq.CURRVAL);
     end loop;
     commit;
-END GENERUJ_GRUPY_KONSUMENTOW;/
-
+END GENERUJ_GRUPY_KONSUMENTOW;
+/
 
 create or replace PROCEDURE LICZ_PRZYCHOD AS
 aktualna_runda NUMBER;
@@ -217,8 +217,8 @@ BEGIN
     LOOP
         update producenci set fundusze = fundusze + i.przychod where id_producenta = i.id_producenta;
     END LOOP;
-END LICZ_PRZYCHOD;/
-
+END LICZ_PRZYCHOD;
+/
 
 create or replace PROCEDURE OCEN_MARKE(BADANIE_RYNKU NUMBER, MARKA NUMBER, GRUPA_KONSUMENTOW NUMBER, DLUGOSC_HIS_ZAKUPOW NUMBER,
                                         CZY_UWZGLEDNIC_JAKOSC CHAR,
@@ -428,7 +428,7 @@ group by id_konsumenta
             --commit;
         end if;
     end loop;
-END OCEN_MARKE;/
+END OCEN_MARKE;
 
 
 create or replace PROCEDURE POTRAC_KOSZTY_MAGAZYNOWANIA AS 
@@ -480,7 +480,7 @@ BEGIN
             END LOOP;
          END LOOP;
     end if;
-END POTRAC_KOSZTY_MAGAZYNOWANIA;/
+END POTRAC_KOSZTY_MAGAZYNOWANIA;
 
 
 create or replace PROCEDURE RESTART_PARAMETROW_PRODUCENTOW AS 
@@ -489,7 +489,7 @@ BEGIN
     select poczatkowe_fundusze into pocz_fundusze from ustawienia_poczatkowe where czy_aktywna = 'a';
     update PRODUCENCI set FUNDUSZE = pocz_fundusze, CZY_SPASOWAL = 'n';
     commit;
-END RESTART_PARAMETROW_PRODUCENTOW;/
+END RESTART_PARAMETROW_PRODUCENTOW;
 
 
 create or replace PROCEDURE RESTART_SEKWENCJI ( NAZWA_SEKWENCJI varchar2 ) AS
@@ -507,8 +507,8 @@ BEGIN
     execute immediate
     'alter sequence ' || NAZWA_SEKWENCJI || ' increment by 1 minvalue 0';
 
-END RESTART_SEKWENCJI;/
-
+END RESTART_SEKWENCJI;
+/
 
 create or replace PROCEDURE WSTAW_DOMYSLNE_JAKOSCI_MAREK
 IS
@@ -519,8 +519,8 @@ BEGIN
    insert into jakosci_marek values (4, 1300);
    insert into jakosci_marek values (5, 1400);
    commit;
-END WSTAW_DOMYSLNE_JAKOSCI_MAREK;/
-
+END WSTAW_DOMYSLNE_JAKOSCI_MAREK;
+/
 
 create or replace PROCEDURE WYCZYSC_TABELE AS 
 BEGIN
@@ -558,8 +558,8 @@ BEGIN
 
     DELETE FROM marki CASCADE;
     DELETE FROM numery_rund CASCADE;
-END WYCZYSC_TABELE;/
-
+END WYCZYSC_TABELE;
+/
 
 create or replace PROCEDURE ZREALIZUJ_ZAKUPY AS
     epsilon NUMBER := 0.01;
@@ -684,8 +684,8 @@ BEGIN
 
         --commit;
     END LOOP;
-END ZREALIZUJ_ZAKUPY;/
-
+END ZREALIZUJ_ZAKUPY;
+/
 
 create or replace PROCEDURE ZRESTARTUJ_SEKWENCJE AS 
 BEGIN
@@ -694,7 +694,7 @@ BEGIN
     RESTART_SEKWENCJI ('ID_MARKI_SEQ');
     RESTART_SEKWENCJI ('ID_PRODUKCJI_SEQ');
     RESTART_SEKWENCJI ('ID_GRUPY_KONSUMENTOW_SEQ');
-END ZRESTARTUJ_SEKWENCJE;/
+END ZRESTARTUJ_SEKWENCJE;
 
 
 create or replace PROCEDURE ROZPOCZNIJ_GRE AS
@@ -728,15 +728,23 @@ BEGIN
     --rozpocznij pierwsza runde
     insert into numery_rund values (1);
     commit;
-END ROZPOCZNIJ_GRE;/
-
+END ROZPOCZNIJ_GRE;
+/
 
 create or replace PROCEDURE ROZPOCZNIJ_RUNDE AS
 --procedura uruchamiana rozpoczyna nowa runde poprzez zwiekszenie licznika rund
+warunek_zakonczenia CHAR;
+nie_spasowali number;
 BEGIN
-  --przywrocenie producentom mozliwosci wykonywania dzialan
-  update producenci set czy_spasowal = 'n';
-
+  SPR_CZY_ISTNIEJE_AKTYWNY_ZES_USTAWIEN;
+  select warunek_zakonczenia_rundy into warunek_zakonczenia from ustawienia_poczatkowe where czy_aktywna = 'a';
+  if warunek_zakonczenia = 'p' then
+        select count(id_producenta) into nie_spasowali from producenci where CZY_SPASOWAL = 'n';
+        if nie_spasowali != 0 then
+            return;
+        end if;
+    end if;
+    
   --realizacja zakupow klientow
   ZREALIZUJ_ZAKUPY;
 
@@ -748,6 +756,9 @@ BEGIN
 
   --zwiekszenie licznika rund - ! czy z sekwencja ma to sens
   insert into numery_rund values (null);
+  
+  --przywrocenie producentom mozliwosci wykonywania dzialan
+  update producenci set czy_spasowal = 'n';
   --commit;
-END ROZPOCZNIJ_RUNDE;/
-
+END ROZPOCZNIJ_RUNDE;
+/

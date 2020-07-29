@@ -102,10 +102,11 @@ DECLARE
     nie_spasowali number (2,0);
 BEGIN
     if :new.czy_spasowal = 't' then
-        select count(id_producenta) into nie_spasowali from producenci where CZY_SPASOWAL = 'n';
-        if nie_spasowali = 0 then
+        --select count(id_producenta) into nie_spasowali from producenci where CZY_SPASOWAL = 'n';
+        --if nie_spasowali = 0 then
+            --null;
             rozpocznij_runde;
-        end if;
+        --end if;
     end if;
 END;
 /
