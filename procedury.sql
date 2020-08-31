@@ -4,6 +4,11 @@ create or replace FUNCTION POLICZ_MPO_WYBRANE_WYMIARY (
                     HISTORIA_ZAKUPOW NUMBER, CZY_UWZGL_HIS_ZAKUPOW CHAR,
                     MARKETING_RUNDA NUMBER, CZY_UWZGL_MARKETING_RUNDA CHAR,
                     MARKETING_HISTORIA NUMBER, CZY_UWZGL_MARKETING_HISTORIA CHAR)
+                    /*
+funkcja pozwalajaca na obliczenie ostatecznej oceny produktu za pomoca przedzialowej metody odniesienia, ale tylko
+z uwzglednieniem wybranych wymiarow, a dokladniej wartosci wybranych indywidualnych funkcji osiagniecia;
+jest niezbedna w badaniu rynku, gdzie to gracz wybiera w jakich wymiarach ma byc badana dana marka
+*/
 RETURN NUMBER
 AS
     epsilon NUMBER := 0.01;
@@ -42,7 +47,13 @@ BEGIN
 END POLICZ_MPO_WYBRANE_WYMIARY;
 /
 
+
 create or replace FUNCTION POLICZ_WYMIAR_MPO (POZIOM_ASPIRACJI NUMBER, POZIOM_REZERWACJI NUMBER, WARTOSC_PARAMETRU NUMBER)
+/*
+funkcja pozwala na policzenie wartosci indywidualnej funkcji osiagniecia na podstawie podanych poziomow aspiracji i rezerwacji
+oraz wartosci parametru zgodnie z przedzialowa metoda punktu odniesienia
+wykorzystywana w zapytaniach w procedurach realizujacych zakupy konsumenta oraz badanie rynku
+*/
 RETURN NUMBER
 AS
     zadowolenie NUMBER := 0.001;
@@ -61,17 +72,23 @@ END POLICZ_WYMIAR_MPO;
 /
 
 create or replace PROCEDURE SPR_CZY_ISTNIEJE_AKTYWNY_ZES_USTAWIEN AS
+/*
+procedura sprawdza czy istnieje aktywny zestaw ustawien poczatkowych,
+czyli taki z ktorego mozna pobrac niezbedne w danym momencie ustawienia;
+w danym momencie moze byc ustawiony jako aktywny jeden zestaw lub moze nie byc ustawiony zaden,
+co pozwala na ewentualna podmiane zestawu aktywnego;
+jezeli w momencie wywolania procedury nie ma ustawionego zadnego zestawu aktywnego,
+wowczas procedura ustawia jako aktywny zestaw o najmniejszym id;
+prowadzacy jest informowany o braku aktywnego zestawu ustawien poczatkowych,
+ale jedynie przed rozpoczeciem gry, w jej trakcie blad jest pomijany, aby nie
+wstrzymywac rozgrywki
+jezeli prowadzacy zdecyduje sie z jakiegos powowdu na zmiane aktywnego zestawu
+ustawien poczatkowych w trakcie trwania rozgrywki, powinien to zrobic w ramach jednego
+commita
+*/
 liczba_aktywnych_opcji number;
 nr_zestawu number;
-BEGIN  
-    --procedura sprawdza czy istnieje aktywny zestaw ustawien poczatkowych;
-    --jezeli nie, ustawia jako aktywny zestaw o najmniejszym id
-    --prowadzacy jest informowany o braku aktywnego zestawu ustawien poczatkowych,
-    --ale jedynie przed rozpoczeciem gry, w jej trakcie blad jest pomijany, aby nie
-    --wstrzymywac rozgrywki
-    --jezeli prowadzacy zdecyduje sie z jakiegos powowdu na zmiane aktywnego zestawu
-    --ustawien poczatkowych w trakcie trwania rozgrywki, powinien to zrobic w ramach jednego
-    --commita
+BEGIN
     select count(numer_zestawu) into liczba_aktywnych_opcji from USTAWIENIA_POCZATKOWE where czy_aktywna = 'a';
     if liczba_aktywnych_opcji <> 1 then
         select numer_zestawu into nr_zestawu
@@ -174,9 +191,35 @@ END GENERUJ_KONSUMENTOW;
 /
 
 create or replace PROCEDURE GENERUJ_GRUPY_KONSUMENTOW
+/*
+procedura tworzy podstawowe grupy konsumentow, ktore sa nastepnie wykorzystywane w badaniu rynku;
+tworzenie grup ma glownie charakter testowy, ale stanowi tez swego rodzaju zabezpieczenie, gdyby prowadzacy
+gre nie chcial lub nie mogl stworzyc innych grup; dzieki tym wygenerowanym grupom wciaz mozliwe jest przeprowadzenie
+rynku przez graczy
+---------------------------------------------------------------------------------------------------------
+procedura zawsze genruje 5, rowno licznych grup; jesli liczba konsumentow nie jest podzielna przez 5, wowczas piata grupa
+jest nieco mniejsza;
+*/
 IS
     liczebnosc_grupy NUMBER;
-    liczebnosc_konsumentow NUMBER;
+    liczebnosc_konsumentow NUMBER
+    /*
+    koszt uzyskania ocen od grupy konsumentow oraz koszt uzyskania historii zakupow z jednej rundy
+    sa zalezne od liczbnosci grupy, co wynika z faktu, ze liczba konsumentow zalezy od ustawien poczatkowych;
+    poniezej znalduja sie konkretne ceny za jednego konsumenta, przy czym ceny sa rozne w zaleznosci od grupy;
+    parametry te nie znajduja sie w tabeli z ustawieniami poczatkowymi, poniewaz zalozenie jest takie,
+    ze - jako testowe - grupy te zostana usuniete lub przynajmniej ceny beda zmodyfikowane przez prowadzacego gre
+    */
+    gr_1_ocena NUMBER := 1000; --cena w setnych czesciach waluty groszach, centach itp.
+    gr_2_ocena NUMBER := 1000;
+    gr_3_ocena NUMBER := 1100;
+    gr_4_ocena NUMBER := 1200;
+    gr_5_ocena NUMBER := 1300;
+    gr_1_his_zakupow NUMBER := 500;
+    gr_2_his_zakupow NUMBER := 550;
+    gr_3_his_zakupow NUMBER := 650;
+    gr_4_his_zakupow NUMBER := 850;
+    gr_5_his_zakupow NUMBER := 1000;
 BEGIN
     select liczba_konsumentow into liczebnosc_konsumentow from ustawienia_poczatkowe where czy_aktywna = 'a';
     liczebnosc_grupy := ceil(liczebnosc_konsumentow / 5);
@@ -210,6 +253,9 @@ END GENERUJ_GRUPY_KONSUMENTOW;
 /
 
 create or replace PROCEDURE LICZ_PRZYCHOD AS
+/*
+funkcja sumuje sprzedaz kazdej marki na koniec rundy i dodaje przychod ze sprzdazy do kont producentow
+*/
 aktualna_runda NUMBER;
 BEGIN
     select max(numer_rundy) into aktualna_runda from numery_rund;
@@ -399,13 +445,10 @@ from
 )
 group by id_konsumenta
 ))
-    
-    
-    
+
     -------------------------------------------------------------------------------------
     --DZIALANIA W PETLI
-    --------------------------------------------------------------------------------------
-    
+    -------------------------------------------------------------------------------------- 
     
     LOOP
         --wpisanie oceny
@@ -432,6 +475,9 @@ END OCEN_MARKE;
 
 
 create or replace PROCEDURE POTRAC_KOSZTY_MAGAZYNOWANIA AS 
+/*
+procedura oblicza koszty magazynowania niesprzedanego towaru i potraca je z kont producentow
+*/
     koszt NUMBER (15, 0);
     nr_rundy NUMBER (5, 0);
     sposob_nalicz_kosztow CHAR(1);
@@ -442,9 +488,23 @@ create or replace PROCEDURE POTRAC_KOSZTY_MAGAZYNOWANIA AS
     liczba_magazynow NUMBER (6, 0);
 BEGIN
     select max(numer_rundy) into nr_rundy from numery_rund;
-    select SPOSOB_NALICZ_KOSZT_MAGAZYN into sposob_nalicz_kosztow from USTAWIENIA_POCZATKOWE where czy_aktywna = 'a';
-    select KOSZT_MAG_SZTUKI_LUB_MAGAZYNU into koszt_mag_sztuki from USTAWIENIA_POCZATKOWE where czy_aktywna = 'a';
 
+    /*
+    sprawdzenie jaki sposob naliczania kosztow magazynowania zostal ustawiony w ustawieniach poczatkowych
+    */
+    SPR_CZY_ISTNIEJE_AKTYWNY_ZES_USTAWIEN;
+    select
+        SPOSOB_NALICZ_KOSZT_MAGAZYN,
+        KOSZT_MAG_SZTUKI_LUB_MAGAZYNU
+    into
+        sposob_nalicz_kosztow,
+        koszt_mag_sztuki
+    from
+        USTAWIENIA_POCZATKOWE
+    where
+        czy_aktywna = 'a';
+
+    --jesli obowiazuje liniowy sposob naliczania kosztow magazynowania, czyli producent placi niezalezna stawke za kazda sztuke zmagazynowanego produktu
     if sposob_nalicz_kosztow = 'l' then
         FOR REC IN (SELECT m.id_marki, m.aktualna_liczba_sztuk, m.ID_PRODUCENTA from marki m where aktualna_liczba_sztuk > 0)
         LOOP
@@ -456,6 +516,7 @@ BEGIN
             insert into magazynowania values (rec.aktualna_liczba_sztuk, koszt, nr_rundy, rec.id_marki);
         END LOOP;
     else
+    --jesli koszt magazynowania jest potracany za przestrzen magazynowa niezbedna do przechowania niesprzedanych sztuk produktu
         select WIELKOSC_POWIERZCHNI_MAG into wielkosc_pow_mag from USTAWIENIA_POCZATKOWE where czy_aktywna = 'a';
         select UPUST_ZA_KOLEJNY_MAGAZYN into upust_per_magazyn from USTAWIENIA_POCZATKOWE where czy_aktywna = 'a';
 
@@ -484,6 +545,10 @@ END POTRAC_KOSZTY_MAGAZYNOWANIA;
 
 
 create or replace PROCEDURE RESTART_PARAMETROW_PRODUCENTOW AS 
+/*
+procedura ustawia wszystkim producentom te sama kwote funduszy, ktora pobiera z ustawien poczatkowych
+dodatkowo gasi flage oznaczajaca czy producent spasowal
+*/
     pocz_fundusze number (10, 0);
 BEGIN
     select poczatkowe_fundusze into pocz_fundusze from ustawienia_poczatkowe where czy_aktywna = 'a';
@@ -493,6 +558,9 @@ END RESTART_PARAMETROW_PRODUCENTOW;
 
 
 create or replace PROCEDURE RESTART_SEKWENCJI ( NAZWA_SEKWENCJI varchar2 ) AS
+/*
+procedura restarutuje wskazana sekwencje, tak aby mogla byc ponownie wykorzystana w nowej rozgrywce
+*/
     tmp number;
 BEGIN
     execute immediate
@@ -511,6 +579,11 @@ END RESTART_SEKWENCJI;
 /
 
 create or replace PROCEDURE WSTAW_DOMYSLNE_JAKOSCI_MAREK
+/*
+procedura generuje standardowy zestaw jakosci marek wraz z referencyjnymi cenami produkcji;
+ceny te moga nie byc adekwatne do skali cen obowiazujacych na symulowanym rynku
+i dlatego powinny byc modyfikowane na potrzeby kazdej gry
+*/
 IS
 BEGIN
    insert into jakosci_marek values (1, 1000);
@@ -522,7 +595,10 @@ BEGIN
 END WSTAW_DOMYSLNE_JAKOSCI_MAREK;
 /
 
-create or replace PROCEDURE WYCZYSC_TABELE AS 
+create or replace PROCEDURE WYCZYSC_TABELE AS
+/*
+funkcja usuwa wszystkie dane pozostale po porzedniej rozgrywce
+*/
 BEGIN
     EXECUTE IMMEDIATE 'TRUNCATE TABLE dostepy_producentow_his_zakup';
     EXECUTE IMMEDIATE 'TRUNCATE TABLE oceny_marek';
@@ -687,20 +763,70 @@ BEGIN
 END ZREALIZUJ_ZAKUPY;
 /
 
-create or replace PROCEDURE ZRESTARTUJ_SEKWENCJE AS 
+CREATE OR REPLACE PROCEDURE STWORZ_CZASOMIERZ AS
+/*
+procedura tworzy job'a, ktory regularnie sprawdza czy zostal spelniony warunek zakonczenia rundy i rozpoczecia nastepnej
+*/
+INTERWAL NUMBER;
+CZY_ISTNIEJE_ZADANIE NUMBER;
+WAR_ZAKONCZENIA_RUNDY CHAR;
 BEGIN
-    RESTART_SEKWENCJI ('ID_BADANIA_RYNKU_SEQ');
-    RESTART_SEKWENCJI ('ID_MARKETINGU_SEQ');
-    RESTART_SEKWENCJI ('ID_MARKI_SEQ');
-    RESTART_SEKWENCJI ('ID_PRODUKCJI_SEQ');
-    RESTART_SEKWENCJI ('ID_GRUPY_KONSUMENTOW_SEQ');
-END ZRESTARTUJ_SEKWENCJE;
-
+    --usuniecie poprzednio utworzonego joba (jesli taki istnial)
+    SELECT count(JOB_NAME) into czy_istnieje_zadanie FROM ALL_SCHEDULER_JOBS where JOB_NAME = 'ROZPOCZNIJ_NOWA_RUNDE';
+    if CZY_ISTNIEJE_ZADANIE > 0 then
+        BEGIN
+            DBMS_SCHEDULER.DROP_JOB(JOB_NAME => 'ROZPOCZNIJ_NOWA_RUNDE');
+        END;
+    end if;
+    
+    --sprawdzenie czy istnieje potrzeba stworzenia czasomierza; jesli kolejne rundy maja byc uruchamiane recznie, wowczas czasomierz jest niepotrzebny
+    --od razu, zeby ograniczyc zapytania, pobierany jest czas rundy jako interwal dla czasomierza
+    select
+        warunek_zakonczenia_rundy,
+        czas_rundy
+    into
+        WAR_ZAKONCZENIA_RUNDY,
+        interwal
+    from
+        ustawienia_poczatkowe where czy_aktywna = 'a';
+    
+    if WAR_ZAKONCZENIA_RUNDY = 'r' then
+        return;
+    end if;
+    
+    /*
+    czas rundy moze byc null jesli warunkiem zakonczenia rundy jest pas wszystkich graczy
+    jednak w takiej sytuacji czasomierz (i interwal) wciaz jest potrzebny i sluzy do cyklicznego sprawdzania czy wszyscy spasowali
+                                zrealizowanie rozpoczynania kolejnej rundy na bazie wyzwalacza podpietego pod tabele PRODUCENCI i pole CZY_SPASOWAL
+                                prowadzilo do mutacji tabeli PRODUCENCI
+    interwal zostaje ustawiony na 1 minute jako najmniejsza wartosc, a wiec baza co minute sprawdza czy wszyscy spasowali; jesli tak, rozpoczyna nastepna runde
+    */
+    if INTERWAL is null then
+        interwal := 1;
+    end if;
+    
+    BEGIN
+    DBMS_SCHEDULER.CREATE_JOB (
+        JOB_NAME        => 'ROZPOCZNIJ_NOWA_RUNDE',
+        JOB_TYPE        => 'STORED_PROCEDURE',
+        JOB_ACTION      => 'hziarek.rozpocznij_runde',
+        START_DATE      => SYSTIMESTAMP,
+        REPEAT_INTERVAL => 'FREQ=MINUTELY;INTERVAL='||interwal||';',
+        ENABLED         => TRUE,
+        COMMENTS        => 'Job rozpoczyna nowa runde');
+    END;
+END STWORZ_CZASOMIERZ;
+/
 
 create or replace PROCEDURE ROZPOCZNIJ_GRE AS
+/*
+procedura wywolywana na poczatku w celu uruchomienia nowej gry;
+jej wywolanie powoduje usuniecia wszystkich danych zwiazanych z poprzednia gra
+oraz wygenerowanie nowego zbioru konsumentow
+*/
     czy_wstawic_jakosci char(1);
 BEGIN
-    --sprawdzenie czy wybrana opcja istnieje
+    --sprawdzenie czy istnieje aktywny zestaw ustawien poczatkowych, aby pobrac z niego niezbedne parametry
     declare
         czy_aktywna_opcja number;
     BEGIN
@@ -709,7 +835,7 @@ BEGIN
             raise_application_error(-20805, 'Brak aktywnego zestawu ustawien poczatkowych');
         end if;
     END;
-    --czyszczenie zawartosci po poprzedniej grze
+    --czyszczenie danych pozostalych po poprzedniej grze
     WYCZYSC_TABELE;
     --restartowanie sekwencji
     ZRESTARTUJ_SEKWENCJE;
@@ -725,38 +851,68 @@ BEGIN
     GENERUJ_GRUPY_KONSUMENTOW;
     --restartowanie parametrow producentow, czyli graczy
     RESTART_PARAMETROW_PRODUCENTOW;
-    --rozpocznij pierwsza runde
+    --rozpoczecie pierwszej rundy
     insert into numery_rund values (1);
+    --uruchmienie czasomierza
+    STWORZ_CZASOMIERZ;
     commit;
 END ROZPOCZNIJ_GRE;
 /
 
 create or replace PROCEDURE ROZPOCZNIJ_RUNDE AS
---procedura uruchamiana rozpoczyna nowa runde poprzez zwiekszenie licznika rund
+/*
+procedura rozpoczyna nowa runde poprzez zwiekszenie licznika rund
+*/
 warunek_zakonczenia CHAR;
 nie_spasowali number;
+max_liczba_rund number;
+aktualna_runda number;
 BEGIN
   SPR_CZY_ISTNIEJE_AKTYWNY_ZES_USTAWIEN;
-  select warunek_zakonczenia_rundy into warunek_zakonczenia from ustawienia_poczatkowe where czy_aktywna = 'a';
+  
+  select
+    warunek_zakonczenia_rundy,
+    liczba_rund
+  into
+    warunek_zakonczenia,
+    max_liczba_rund
+  from
+    ustawienia_poczatkowe where czy_aktywna = 'a';
+  
+  select max(numer_rundy) into aktualna_runda from numery_rund;
+  
+  --sprawdzenie czy nie zostala osiagnieta maksymalna liczba rund
+  if max_liczba_rund is not null and max_liczba_rund <= aktualna_runda then
+    BEGIN
+    DBMS_SCHEDULER.SET_ATTRIBUTE (
+       'ROZPOCZNIJ_NOWA_RUNDE',
+       'ENABLED',
+       FALSE);
+    END;
+    raise_application_error(-20950, 'Osiagnieto maksymalna liczbe rund');
+  end if;
+  
+  --jesli warunkiem zakonczenia rundy i rozpoczecia nastepnej jest pas wszystkich graczy,
+  --to runda nie powinna zostac zakonczona, jesli wszyscy nie spasowali
   if warunek_zakonczenia = 'p' then
         select count(id_producenta) into nie_spasowali from producenci where CZY_SPASOWAL = 'n';
         if nie_spasowali != 0 then
             return;
         end if;
     end if;
-    
+
   --realizacja zakupow klientow
   ZREALIZUJ_ZAKUPY;
 
   --przeliczanie i dodanie przychodu ze sprzedazy do kont producentow
   LICZ_PRZYCHOD;
 
-  --koszty magazynowania na kolejna runde
+  --potracenie kosztow magazynowania za towar nie sprzedany w danej rundzie
   POTRAC_KOSZTY_MAGAZYNOWANIA;
 
-  --zwiekszenie licznika rund - ! czy z sekwencja ma to sens
+  --zwiekszenie licznika rund
   insert into numery_rund values (null);
-  
+
   --przywrocenie producentom mozliwosci wykonywania dzialan
   update producenci set czy_spasowal = 'n';
   --commit;
