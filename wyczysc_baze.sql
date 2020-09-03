@@ -9,6 +9,9 @@ DROP TABLE badania_rynku;
 DROP TABLE grupy_konsumentow;
 DROP TABLE historie_cen;
 DROP TABLE magazynowania;
+DROP TABLE koszty_magazynowania;
+DROP TABLE koszty_marketingu;
+DROP TABLE koszty_produkcji_produktow;
 DROP TABLE produkcje;
 DROP TABLE marki;
 DROP TABLE jakosci_marek;
@@ -28,7 +31,6 @@ drop view producenci_p;
 drop view produkcje_p;
 drop view sprzedaz_p;
 drop view sprzedaz_producentow_p;
-drop view wartosci_funkcji_osiagniecia_mpo_p;
 
 drop procedure generuj_grupy_konsumentow;
 drop procedure POTRAC_KOSZTY_MAGAZYNOWANIA;
@@ -45,6 +47,8 @@ drop procedure ZREALIZUJ_ZAKUPY;
 drop procedure OCEN_MARKE;
 drop FUNCTION POLICZ_WYMIAR_MPO;
 drop FUNCTION POLICZ_MPO_WYBRANE_WYMIARY;
+drop procedure SPR_CZY_ISTNIEJE_AKTYWNY_ZES_USTAWIEN;
+drop procedure STWORZ_CZASOMIERZ;
 
 --sekwencje
 DROP SEQUENCE ID_BADANIA_RYNKU_SEQ;

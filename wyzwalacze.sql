@@ -9,6 +9,21 @@ BEGIN
 END;
 /
 
+create or replace TRIGGER AUTOINKREMENTACJA_ID_PRODUCENTA 
+BEFORE INSERT ON PRODUCENCI
+for each row
+BEGIN
+    --autoinkrementacja id
+    SELECT ID_PRODUCENTA_SEQ.NEXTVAL
+    INTO :NEW.ID_PRODUCENTA
+    FROM DUAL;
+    
+    SPR_CZY_ISTNIEJE_AKTYWNY_ZES_USTAWIEN;
+    select poczatkowe_fundusze into :new.fundusze from USTAWIENIA_POCZATKOWE where czy_aktywna = 'a';
+END;
+/
+
+
 create or replace TRIGGER AUTOINKREMENTACJA_LICZNIKA_RUND 
 BEFORE INSERT ON NUMERY_RUND
 FOR EACH ROW
@@ -44,14 +59,24 @@ END;
 /
 
 create or replace TRIGGER POTRAC_KOSZT_WPROWADZENIA_MARKI_NA_RYNEK
-AFTER UPDATE OF CZY_UTWORZONA ON MARKI
+AFTER UPDATE OF runda_utworzenia ON MARKI
 FOR EACH ROW
 DECLARE
     koszt NUMBER;
+    koszt_produkcji NUMBER;
+    nr_rundy NUMBER;
 BEGIN
-    if :new.CZY_UTWORZONA <> :old.CZY_UTWORZONA then
+
+
+    if :old.runda_utworzenia is null then
+        SPR_CZY_ISTNIEJE_AKTYWNY_ZES_USTAWIEN;
         select koszt_utworzenia_marki into koszt from ustawienia_poczatkowe where czy_aktywna = 'a';
         update producenci set fundusze = fundusze - koszt where id_producenta = :old.id_producenta;
+        
+        --wpisanie kosztu produkcji
+        select max(numer_rundy) into nr_rundy from NUMERY_RUND;
+        select ref_koszt_produkcji_sztuki into koszt_produkcji from JAKOSCI_MAREK where jakosc_marki = :old.jakosc_marki;
+        insert into koszty_produkcji_produktow values (:old.id_marki, koszt_produkcji, nr_rundy);
     end if;
 END;
 /
@@ -60,12 +85,33 @@ create or replace TRIGGER POTRACENIE_KOSZTOW_MARKETINGU
 AFTER INSERT ON MARKETINGI
 FOR EACH ROW
 DECLARE
-id_prod NUMBER (3, 0);
-BEGIN
-    --okreslenie id producenta
+    koszt NUMBER;
+    koszt_per_st_intensywnosci NUMBER;
+    fundusze_producenta NUMBER;
+    id_prod NUMBER;
+BEGIN  
     select id_producenta into id_prod from marki where id_marki = :new.id_marki;
+    
+    select
+        KOSZT_BAZOWY, koszt_per_st_intens
+    into
+        koszt, koszt_per_st_intensywnosci
+    from(
+        select 
+            KOSZT_BAZOWY, koszt_per_st_intens
+        from
+            koszty_marketingu
+        where
+            id_producenta = id_prod
+        order by
+            numer_rundy desc)
+    where
+        rownum = 1;
+        
+    
+    koszt := koszt + koszt_per_st_intensywnosci * :new.intensywnosc_marketingu;
     --potracenie kosztow
-    update producenci set FUNDUSZE = FUNDUSZE - :new.koszt_marketingu where ID_PRODUCENTA = id_prod;
+    update producenci set FUNDUSZE = FUNDUSZE - koszt where ID_PRODUCENTA = id_prod;
 END;
 /
 
@@ -73,10 +119,30 @@ create or replace TRIGGER REALIZUJ_PRODUKCJE
 AFTER INSERT ON PRODUKCJE
 for each row
 DECLARE
-producent number (3,0);
-BEGIN
-    select p.id_producenta into producent from producenci p, marki m where p.ID_PRODUCENTA = m.ID_PRODUCENTA AND m.ID_MARKI = :NEW.id_marki;
-    update producenci set FUNDUSZE = FUNDUSZE - :new.koszt_produkcji where ID_PRODUCENTA = producent;
+    id_prod NUMBER;
+    koszt NUMBER;
+    KOSZT_PRODUKCJ_sztuki NUMBER;
+BEGIN 
+    select
+        KOSZT_PRODUKCJI
+    into
+        KOSZT_PRODUKCJ_sztuki
+    from(
+        select 
+            KOSZT_PRODUKCJI
+        from
+            KOSZTY_PRODUKCJI_PRODUKTOW
+        where
+            id_marki = :new.id_marki
+        order by
+            numer_rundy desc)
+    where
+        rownum = 1;
+    
+    koszt := KOSZT_PRODUKCJ_sztuki * :new.wolumen;
+
+    select m.id_producenta into id_prod from marki m where m.id_marki = :new.id_marki;
+    update producenci set FUNDUSZE = FUNDUSZE - koszt where ID_PRODUCENTA = id_prod;
     --uaktualnienie liczby dostepnych sztuk
     update marki set AKTUALNA_LICZBA_SZTUK = AKTUALNA_LICZBA_SZTUK + :new.WOLUMEN where ID_MARKI = :NEW.id_marki;
 END;
@@ -91,22 +157,6 @@ BEGIN
     select count(numer_zestawu) into liczba_aktywnych_opcji from USTAWIENIA_POCZATKOWE where czy_aktywna = 'a';
     if :new.czy_aktywna = 'a' and liczba_aktywnych_opcji <> 0 then
         raise_application_error(-20806, 'Moze byc maksymalnie jeden aktywny zestaw ustawien poczatkowych');
-    end if;
-END;
-/
-
-create or replace TRIGGER SPR_CZY_WSZYSCY_SPASOWALI 
-AFTER UPDATE OF CZY_SPASOWAL ON PRODUCENCI
-for each row
-DECLARE
-    nie_spasowali number (2,0);
-BEGIN
-    if :new.czy_spasowal = 't' then
-        --select count(id_producenta) into nie_spasowali from producenci where CZY_SPASOWAL = 'n';
-        --if nie_spasowali = 0 then
-            --null;
-            rozpocznij_runde;
-        --end if;
     end if;
 END;
 /
@@ -150,23 +200,31 @@ DECLARE
 koszt NUMBER (15, 0);
 koszt_per_st_intensywnosci NUMBER (15, 0);
 fundusze_producenta NUMBER;
+id_prod NUMBER;
 BEGIN  
-    --obliczenie kosztu
+    select p.id_producenta into id_prod from producenci p, marki m where m.id_producenta = p.id_producenta and m.id_marki = :new.id_marki;
+    
     select
-        marketing_KOSZT_BAZOWY,
-        marketing_koszt_per_st_intens
+        KOSZT_BAZOWY, koszt_per_st_intens
     into
-        koszt,
-        koszt_per_st_intensywnosci
-    from
-        ustawienia_poczatkowe
+        koszt, koszt_per_st_intensywnosci
+    from(
+        select 
+            KOSZT_BAZOWY, koszt_per_st_intens
+        from
+            koszty_marketingu
+        where
+            id_producenta = id_prod
+        order by
+            numer_rundy desc)
     where
-        czy_aktywna = 'a';
+        rownum = 1;
+        
 
-    :new.koszt_marketingu := koszt + koszt_per_st_intensywnosci * :new.intensywnosc_marketingu;
+    koszt := koszt + koszt_per_st_intensywnosci * :new.intensywnosc_marketingu;
 
-    select p.fundusze into fundusze_producenta from producenci p, marki m where m.id_producenta = p.id_producenta and m.id_marki = :new.id_marki;
-    if fundusze_producenta < :new.koszt_marketingu then
+    select p.fundusze into fundusze_producenta from producenci p where p.id_producenta = id_prod;
+    if fundusze_producenta < koszt then
         raise_application_error(-20801, 'Niewystarczajce fundusze');
     end if;
 
@@ -185,17 +243,34 @@ BEFORE INSERT ON PRODUKCJE
 for each row
 DECLARE
 fund number;
+koszt NUMBER;
 BEGIN
     --autoinkrementacja id
     SELECT ID_PRODUKCJI_SEQ.NEXTVAL
     INTO :NEW.ID_PRODUKCJI
     FROM DUAL;
+    
+    select
+        KOSZT_PRODUKCJI
+    into
+        koszt
+    from(
+        select 
+            KOSZT_PRODUKCJI
+        from
+            KOSZTY_PRODUKCJI_PRODUKTOW
+        where
+            id_marki = :NEW.id_marki
+        order by
+            numer_rundy desc)
+    where
+        rownum = 1;
 
     --ustawienie kosztu i sprawdzenie czy producent ma fundusze
-    select p.fundusze into fund from producenci p, marki m where p.ID_PRODUCENTA = m.ID_PRODUCENTA AND m.ID_MARKI = :NEW.id_marki;
-    select KOSZT_PRODUKCJI_SZTUKI into :new.koszt_produkcji from marki where ID_MARKI = :NEW.id_marki;
-    :new.koszt_produkcji := :new.koszt_produkcji * :new.wolumen;
-    if fund < :new.koszt_produkcji then
+    select p.fundusze into fund from producenci p, marki m where p.id_producenta = m.id_producenta and m.id_marki = :new.id_marki;
+    
+    koszt := koszt * :new.wolumen;
+    if fund < koszt then
         raise_application_error(-20801, 'Niewystarczajce fundusze');
     end if;
 
@@ -205,18 +280,24 @@ END;
 /
 
 create or replace TRIGGER SPR_WPROWADZENIE_MARKI_NA_RYNEK
-BEFORE UPDATE OF CZY_UTWORZONA ON MARKI
+BEFORE UPDATE OF RUNDA_UTWORZENIA ON MARKI
 FOR EACH ROW
 DECLARE
     koszt NUMBER;
     fundusze_producenta NUMBER;
 BEGIN
+    if :new.runda_utworzenia is null and :old.runda_utworzenia is not null then
+        raise_application_error(-20808, 'Marka zostala wprowadzona na rynek i nie mozna tego zmienic!');
+    end if;
+    
     select koszt_utworzenia_marki into koszt from ustawienia_poczatkowe where czy_aktywna = 'a';
     select fundusze into fundusze_producenta from producenci where id_producenta = :old.id_producenta;
 
     if fundusze_producenta < koszt then
         raise_application_error(-20801, 'Niewystarczajce fundusze');
     end if;
+    
+    select max(numer_rundy) into :new.runda_utworzenia from numery_rund;
 END;
 /
 
@@ -229,8 +310,8 @@ BEGIN
   SELECT ID_MARKI_SEQ.NEXTVAL
   INTO :NEW.ID_MARKI
   FROM DUAL;
-
-  select ref_koszt_produkcji_sztuki into :new.koszt_produkcji_sztuki from JAKOSCI_MAREK where jakosc_marki = :new.jakosc_marki;
+  
+  :new.runda_utworzenia := null;
 END;
 /
 
@@ -284,5 +365,50 @@ BEGIN
         raise_application_error(-20904, 'Maksymalna roznica miedzy poziomem apiracji a poziomem rezerwacji w odniesieniu do marketingu jest mniejsza lub rowna minimalnej');
     end if;
     
+    if :new.warunek_zakonczenia_rundy = 'c' and :new.czas_rundy is null then
+        raise_application_error(-20905, 'Przy wybranym warunku zakonczenia rundy czas rundy jest wymagany');
+    end if;
+    
+    if :new.ref_sposob_nalicz_koszt_mag = 'm' and (:new.ref_wielkosc_powierzchni_mag is null or :new.ref_upust_za_kolejny_magazyn is null) then
+        raise_application_error(-20906, 'Przy wybranym warunku zakonczenia rundy czas rundy jest wymagany');
+    end if;
+END;
+/
+
+--TODO
+create or replace TRIGGER AKTUALIZOWANIE_CENY_PRODUKCJI 
+BEFORE INSERT ON KOSZTY_PRODUKCJI_PRODUKTOW
+FOR EACH ROW
+DECLARE
+nr_rundy number (5,0);
+zlecone_produkcje number;
+BEGIN
+    /*
+    nie mozna wpisac nowej ceny produkcji marki jesli w danej rundzie producent zlecil juz jakas produkcje wybranej marki,
+    poniewaz dla wszystkich operacji produkcji produktow danej marki w jednej rundzie musi obowiazywac jedna cena
+    ma to na celu przypisanie zmian parametrow do miary czasu, jaki w symulatorze stanowi runda - w danej rundzie obowiazuje taka cena,
+    w nastepnej inna, ale przez cala runde ta sama
+    proba monitorowania zmian na przestrzeni rundy pociagalaby za soba koniecznosc zapisywania czasu realizacji kazdej z operacji
+    */
+    select max(numer_rundy) into nr_rundy from NUMERY_RUND;
+    
+    select count(id_marki) into zlecone_produkcje from produkcje where numer_rundy = nr_rundy and id_marki = :new.id_marki;
+    if zlecone_produkcje > 0 then
+        raise_application_error(-20881, 'W tej rundzie zlecono juz produkcje po poprzedniej cenie');
+    end if;
+    
+    BEGIN
+        :new.numer_rundy := nr_rundy;
+
+    EXCEPTION
+    --przechwycenie wyjatku naruszenia wiezow integralnosci
+    --taki blad moze sie pojawic w sytuacji gdy w danej rundzie cena zostala juz raz zmieniona,
+    --poniewaz kluczem glownym tabeli historia cen jest para numer_rundy oraz id_marki
+    --nie ma sensu tworzyc oddzielnego identyfikatora i zapamietywac wszystkich zmiany, poniewaz ostatecznie
+    --znaczenie ma tylko ostatnia zmiana ceny w danej rundzie, ta ktora bedzie wplywala na zakup konsumenta
+        WHEN DUP_VAL_ON_INDEX
+        THEN
+            UPDATE KOSZTY_PRODUKCJI_PRODUKTOW set koszt_produkcji = :new.koszt_produkcji where id_marki = :new.id_marki and numer_rundy = nr_rundy;
+        END;
 END;
 /

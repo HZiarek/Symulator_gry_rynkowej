@@ -1,3 +1,24 @@
+create or replace PROCEDURE RESTART_SEKWENCJI ( NAZWA_SEKWENCJI varchar2 ) AS
+/*
+procedura restarutuje wskazana sekwencje, tak aby mogla byc ponownie wykorzystana w nowej rozgrywce
+*/
+    tmp number;
+BEGIN
+    execute immediate
+    'select ' || NAZWA_SEKWENCJI || '.nextval from dual' INTO tmp;
+
+    execute immediate
+    'alter sequence ' || NAZWA_SEKWENCJI || ' increment by -' || tmp || ' minvalue 0';
+
+    execute immediate
+    'select ' || NAZWA_SEKWENCJI || '.nextval from dual' INTO tmp;
+
+    execute immediate
+    'alter sequence ' || NAZWA_SEKWENCJI || ' increment by 1 minvalue 0';
+
+END RESTART_SEKWENCJI;
+/
+
 create or replace FUNCTION POLICZ_MPO_WYBRANE_WYMIARY (
                     CENA NUMBER, CZY_UWZGL_CENE CHAR,
                     JAKOSC NUMBER, CZY_UWZGL_JAKOSC CHAR,
@@ -202,7 +223,7 @@ jest nieco mniejsza;
 */
 IS
     liczebnosc_grupy NUMBER;
-    liczebnosc_konsumentow NUMBER
+    liczebnosc_konsumentow NUMBER;
     /*
     koszt uzyskania ocen od grupy konsumentow oraz koszt uzyskania historii zakupow z jednej rundy
     sa zalezne od liczbnosci grupy, co wynika z faktu, ze liczba konsumentow zalezy od ustawien poczatkowych;
@@ -224,27 +245,27 @@ BEGIN
     select liczba_konsumentow into liczebnosc_konsumentow from ustawienia_poczatkowe where czy_aktywna = 'a';
     liczebnosc_grupy := ceil(liczebnosc_konsumentow / 5);
 
-    insert into grupy_konsumentow values (null, liczebnosc_grupy*1000, liczebnosc_grupy*500, null);
+    insert into grupy_konsumentow values (null, liczebnosc_grupy*gr_1_ocena, liczebnosc_grupy*gr_1_his_zakupow, null);
     for i in 1..liczebnosc_grupy loop
         insert into PRZYNALEZNOSCI_DO_GRUP values (i, id_grupy_konsumentow_seq.CURRVAL);
     end loop;
 
-    insert into grupy_konsumentow values (null, liczebnosc_grupy*1000, liczebnosc_grupy*550, null);
+    insert into grupy_konsumentow values (null, liczebnosc_grupy*gr_2_ocena, liczebnosc_grupy*gr_2_his_zakupow, null);
     for i in liczebnosc_grupy+1..liczebnosc_grupy*2 loop
         insert into PRZYNALEZNOSCI_DO_GRUP values (i, id_grupy_konsumentow_seq.CURRVAL);
     end loop;
 
-    insert into grupy_konsumentow values (null, liczebnosc_grupy*1100, liczebnosc_grupy*650, null);
+    insert into grupy_konsumentow values (null, liczebnosc_grupy*gr_3_ocena, liczebnosc_grupy*gr_3_his_zakupow, null);
     for i in liczebnosc_grupy*2+1..liczebnosc_grupy*3 loop
         insert into PRZYNALEZNOSCI_DO_GRUP values (i, id_grupy_konsumentow_seq.CURRVAL);
     end loop;
 
-    insert into grupy_konsumentow values (null, liczebnosc_grupy*1200, liczebnosc_grupy*850, null);
+    insert into grupy_konsumentow values (null, liczebnosc_grupy*gr_4_ocena, liczebnosc_grupy*gr_4_his_zakupow, null);
     for i in liczebnosc_grupy*3+1..liczebnosc_grupy*4 loop
         insert into PRZYNALEZNOSCI_DO_GRUP values (i, id_grupy_konsumentow_seq.CURRVAL);
     end loop;
 
-    insert into grupy_konsumentow values (null, liczebnosc_grupy*1300, liczebnosc_grupy*1000, null);
+    insert into grupy_konsumentow values (null, liczebnosc_grupy*gr_5_ocena, liczebnosc_grupy*gr_5_his_zakupow, null);
     for i in liczebnosc_grupy*4+1..liczebnosc_konsumentow loop
         insert into PRZYNALEZNOSCI_DO_GRUP values (i, id_grupy_konsumentow_seq.CURRVAL);
     end loop;
@@ -280,10 +301,10 @@ create or replace PROCEDURE OCEN_MARKE(BADANIE_RYNKU NUMBER, MARKA NUMBER, GRUPA
     sr_market_prod NUMBER;
 BEGIN
     select max(numer_rundy) into nr_rundy from numery_rund;
-    select count(id_marki) into liczba_wszystkich_marek from marki where czy_utworzona = 't';
+    select count(id_marki) into liczba_wszystkich_marek from marki where runda_utworzenia is not null;
     --badanie rynku odbywa sie jako porownanie pewnej marki (utworzonej lub nie) z pozostalymi markami dostepnymi na rynku, czyli utworzonymi
     --jesli badana marka nie zostala jeszcze utworzona to liczebnosc zbioru analizowanych marek musi zostac zwiekszona o 1
-    select count(id_marki) into czy_docelowa_marka_utworzona from marki where czy_utworzona = 'n' and id_marki = marka;
+    select count(id_marki) into czy_docelowa_marka_utworzona from marki where runda_utworzenia is null and id_marki = marka;
     liczba_wszystkich_marek := liczba_wszystkich_marek + czy_docelowa_marka_utworzona;
     
     SPR_CZY_ISTNIEJE_AKTYWNY_ZES_USTAWIEN;
@@ -367,7 +388,7 @@ from
                     left join reklama_producenta_his ph on m.id_producenta = ph.id_producenta
                     left join reklama_marki_his mh on m.id_marki = mh.id_marki
                 where
-                    m.czy_utworzona = 't'),
+                    m.runda_utworzenia is not null),
             oceny_marek as (
                  select
                     id_marki,
@@ -472,7 +493,7 @@ group by id_konsumenta
         end if;
     end loop;
 END OCEN_MARKE;
-
+/
 
 create or replace PROCEDURE POTRAC_KOSZTY_MAGAZYNOWANIA AS 
 /*
@@ -480,102 +501,106 @@ procedura oblicza koszty magazynowania niesprzedanego towaru i potraca je z kont
 */
     koszt NUMBER (15, 0);
     nr_rundy NUMBER (5, 0);
-    sposob_nalicz_kosztow CHAR(1);
-    koszt_mag_sztuki NUMBER (15, 0);
-    wielkosc_pow_mag NUMBER (12, 0);
-    upust_per_magazyn NUMBER (2, 0);
     upust NUMBER;
     liczba_magazynow NUMBER (6, 0);
 BEGIN
     select max(numer_rundy) into nr_rundy from numery_rund;
-
-    /*
-    sprawdzenie jaki sposob naliczania kosztow magazynowania zostal ustawiony w ustawieniach poczatkowych
-    */
-    SPR_CZY_ISTNIEJE_AKTYWNY_ZES_USTAWIEN;
-    select
-        SPOSOB_NALICZ_KOSZT_MAGAZYN,
-        KOSZT_MAG_SZTUKI_LUB_MAGAZYNU
-    into
-        sposob_nalicz_kosztow,
-        koszt_mag_sztuki
-    from
-        USTAWIENIA_POCZATKOWE
-    where
-        czy_aktywna = 'a';
-
-    --jesli obowiazuje liniowy sposob naliczania kosztow magazynowania, czyli producent placi niezalezna stawke za kazda sztuke zmagazynowanego produktu
-    if sposob_nalicz_kosztow = 'l' then
-        FOR REC IN (SELECT m.id_marki, m.aktualna_liczba_sztuk, m.ID_PRODUCENTA from marki m where aktualna_liczba_sztuk > 0)
+    
+    --wpisanie to tabeli towaru wymagajacego zmagazynowania
+    FOR MAR IN (SELECT m.id_marki, m.aktualna_liczba_sztuk from marki m where aktualna_liczba_sztuk > 0)
         LOOP
-            --okreslenie kosztu magazyniwania
-            koszt := rec.aktualna_liczba_sztuk * koszt_mag_sztuki;
-            --obciazenie kosztami konta producenta
-            UPDATE producenci SET fundusze = fundusze - koszt WHERE ID_PRODUCENTA = REC.id_producenta;
-            --dodanie wpisu do tabeli historii magazynowania
-            insert into magazynowania values (rec.aktualna_liczba_sztuk, koszt, nr_rundy, rec.id_marki);
+            insert into magazynowania values (mar.aktualna_liczba_sztuk, nr_rundy, mar.id_marki);
         END LOOP;
-    else
-    --jesli koszt magazynowania jest potracany za przestrzen magazynowa niezbedna do przechowania niesprzedanych sztuk produktu
-        select WIELKOSC_POWIERZCHNI_MAG into wielkosc_pow_mag from USTAWIENIA_POCZATKOWE where czy_aktywna = 'a';
-        select UPUST_ZA_KOLEJNY_MAGAZYN into upust_per_magazyn from USTAWIENIA_POCZATKOWE where czy_aktywna = 'a';
 
-        FOR REC IN (select sum(aktualna_liczba_sztuk) as liczba_sztuk, ID_PRODUCENTA from marki where aktualna_liczba_sztuk > 0 group by ID_PRODUCENTA)
+    FOR REC IN (
+            select
+                p.id_producenta,
+                p.liczba_sztuk,
+                (select SPOSOB_NALICZANIA_KOSZTOW_MAG from 
+                    (select SPOSOB_NALICZANIA_KOSZTOW_MAG from KOSZTY_MAGAZYNOWANIA_P c where c.id_producenta = p.id_producenta order by numer_rundy desc)
+                where rownum = 1) as SPOSOB_NALICZANIA_KOSZTOW_MAG,
+                (select KOSZT_MAG_SZTUKI_LUB_MAGAZYNU from 
+                    (select KOSZT_MAG_SZTUKI_LUB_MAGAZYNU from KOSZTY_MAGAZYNOWANIA_P c where c.id_producenta = p.id_producenta order by numer_rundy desc)
+                where rownum = 1) as KOSZT_MAG_SZTUKI_LUB_MAGAZYNU,
+                (select WIELKOSC_POWIERZCHNI_MAG from 
+                    (select WIELKOSC_POWIERZCHNI_MAG from KOSZTY_MAGAZYNOWANIA_P c where c.id_producenta = p.id_producenta order by numer_rundy desc)
+                where rownum = 1) as WIELKOSC_POWIERZCHNI_MAG,
+                (select UPUST_ZA_KOLEJNY_MAGAZYN from 
+                    (select UPUST_ZA_KOLEJNY_MAGAZYN from KOSZTY_MAGAZYNOWANIA_P c where c.id_producenta = p.id_producenta order by numer_rundy desc)
+                where rownum = 1) as UPUST_ZA_KOLEJNY_MAGAZYN
+            from(
+                select id_producenta, sum(aktualna_liczba_sztuk) as liczba_sztuk from marki where aktualna_liczba_sztuk > 0 group by id_producenta) p
+            )
         LOOP
-            --okreslenie jaki upust przysluguje za liczbe wynajetych magazynow; ostateczny upust nie moze byc wiekszy niz 50%
-            liczba_magazynow := CEIL(rec.liczba_sztuk/wielkosc_pow_mag);
-            upust := liczba_magazynow*upust_per_magazyn;
-            if upust > 50 then
-                upust := 50;
+
+            --jesli obowiazuje liniowy sposob naliczania kosztow magazynowania, czyli producent placi niezalezna stawke za kazda sztuke zmagazynowanego produktu
+            if REC.SPOSOB_NALICZANIA_KOSZTOW_MAG = 'l' then
+                --okreslenie kosztu magazyniwania
+                koszt := rec.liczba_sztuk * rec.KOSZT_MAG_SZTUKI_LUB_MAGAZYNU;
+                --obciazenie kosztami konta producenta
+                UPDATE producenci SET fundusze = fundusze - koszt WHERE ID_PRODUCENTA = REC.id_producenta;
+            
+            else
+                --jesli koszt magazynowania jest potracany za przestrzen magazynowa niezbedna do przechowania niesprzedanych sztuk produktu
+                --okreslenie jaki upust przysluguje za liczbe wynajetych magazynow; ostateczny upust nie moze byc wiekszy niz 50%
+                liczba_magazynow := CEIL(rec.liczba_sztuk/rec.WIELKOSC_POWIERZCHNI_MAG);
+                upust := (liczba_magazynow - 1)*rec.UPUST_ZA_KOLEJNY_MAGAZYN;
+                if upust > 50 then
+                    upust := 50;
+                end if;
+                --okreslenie kosztu magazynowania wszystkich marek producenta; symuluje to sytuacje napelniania magzynow produktami roznych marek
+                --liczenie kosztu oddzielnie dla kazdej marki oznaczaloby ze producent musi oddzielnie magazynowac produkty kazdej z marek i nie moze wykorzystac wolnej przestrzeni
+                --oplaconej w ramach magazynowania innej marki
+                koszt := CEIL(rec.liczba_sztuk/rec.WIELKOSC_POWIERZCHNI_MAG) * rec.KOSZT_MAG_SZTUKI_LUB_MAGAZYNU * (100-upust)/100;
+                --obciazenie kosztami konta producenta
+                UPDATE producenci SET fundusze = fundusze - koszt WHERE ID_PRODUCENTA = REC.ID_PRODUCENTA;
             end if;
-            --okreslenie kosztu magazynowania wszystkich marek producenta; symuluje to sytuacje napelniania magzynow produktami roznych marek
-            --liczenie kosztu oddzielnie dla kazdej marki oznaczaloby ze producent musi oddzielnie magazynowac produkty kazdej z marek i nie moze wykorzystac wolnej przestrzeni
-            --oplaconej w ramach magazynowania innej marki
-            koszt := CEIL(rec.liczba_sztuk/wielkosc_pow_mag) * koszt_mag_sztuki * (100-upust)/100;
-            --obciazenie kosztami konta producenta
-            UPDATE producenci SET fundusze = fundusze - koszt WHERE ID_PRODUCENTA = REC.ID_PRODUCENTA;
-            --dodanie wpisow do tabeli historii magazynowania
-            FOR MAR IN (select id_marki, aktualna_liczba_sztuk, ID_PRODUCENTA from marki where ID_PRODUCENTA = rec.ID_PRODUCENTA)
-            LOOP
-                insert into magazynowania values (mar.aktualna_liczba_sztuk, koszt*(mar.aktualna_liczba_sztuk/rec.liczba_sztuk), nr_rundy, mar.id_marki);
-            END LOOP;
-         END LOOP;
-    end if;
+        END LOOP;           
 END POTRAC_KOSZTY_MAGAZYNOWANIA;
+/
 
-
-create or replace PROCEDURE RESTART_PARAMETROW_PRODUCENTOW AS 
+create or replace PROCEDURE RESTART_PARAMETROW_PRODUCENTOW AS
 /*
 procedura ustawia wszystkim producentom te sama kwote funduszy, ktora pobiera z ustawien poczatkowych
 dodatkowo gasi flage oznaczajaca czy producent spasowal
 */
     pocz_fundusze number (10, 0);
+    sposob_naliczania_kosztow_magazynowania CHAR;
+    koszt_magazynowania_sztuki_lub_magazynu NUMBER;
+    upust NUMBER;
+    wielkosc_powierzchni_magazynowej NUMBER;
+    koszt_bazowy_marketingu NUMBER;
+    koszt_market_per_st_intensywnosci NUMBER;
 BEGIN
-    select poczatkowe_fundusze into pocz_fundusze from ustawienia_poczatkowe where czy_aktywna = 'a';
+    select
+        poczatkowe_fundusze,
+        ref_sposob_nalicz_koszt_mag,
+        ref_koszt_mag_szt_lub_magazynu,
+        ref_wielkosc_powierzchni_mag,
+        ref_upust_za_kolejny_magazyn,
+        ref_koszt_bazowy_market,
+        ref_koszt_per_st_intens
+    into
+        pocz_fundusze,
+        sposob_naliczania_kosztow_magazynowania,
+        koszt_magazynowania_sztuki_lub_magazynu,
+        wielkosc_powierzchni_magazynowej,
+        upust,
+        koszt_bazowy_marketingu,
+        koszt_market_per_st_intensywnosci
+    from ustawienia_poczatkowe
+    where czy_aktywna = 'a';
+    
     update PRODUCENCI set FUNDUSZE = pocz_fundusze, CZY_SPASOWAL = 'n';
+    for rec in (select id_producenta from producenci)
+    loop
+        insert into koszty_magazynowania values (sposob_naliczania_kosztow_magazynowania,
+                    koszt_magazynowania_sztuki_lub_magazynu, wielkosc_powierzchni_magazynowej, upust, rec.id_producenta, 1);
+        insert into koszty_marketingu values (koszt_bazowy_marketingu,
+                    koszt_market_per_st_intensywnosci, 1, rec.id_producenta);
+    end loop;
     commit;
 END RESTART_PARAMETROW_PRODUCENTOW;
-
-
-create or replace PROCEDURE RESTART_SEKWENCJI ( NAZWA_SEKWENCJI varchar2 ) AS
-/*
-procedura restarutuje wskazana sekwencje, tak aby mogla byc ponownie wykorzystana w nowej rozgrywce
-*/
-    tmp number;
-BEGIN
-    execute immediate
-    'select ' || NAZWA_SEKWENCJI || '.nextval from dual' INTO tmp;
-
-    execute immediate
-    'alter sequence ' || NAZWA_SEKWENCJI || ' increment by -' || tmp || ' minvalue 0';
-
-    execute immediate
-    'select ' || NAZWA_SEKWENCJI || '.nextval from dual' INTO tmp;
-
-    execute immediate
-    'alter sequence ' || NAZWA_SEKWENCJI || ' increment by 1 minvalue 0';
-
-END RESTART_SEKWENCJI;
 /
 
 create or replace PROCEDURE WSTAW_DOMYSLNE_JAKOSCI_MAREK
@@ -645,7 +670,7 @@ create or replace PROCEDURE ZREALIZUJ_ZAKUPY AS
     sr_market_prod NUMBER;
 BEGIN
     select max(numer_rundy) into nr_rundy from numery_rund;
-    select sum(aktualna_liczba_sztuk) into liczba_produktow from marki where czy_utworzona = 't';
+    select sum(aktualna_liczba_sztuk) into liczba_produktow from marki where runda_utworzenia is not null;
     SPR_CZY_ISTNIEJE_AKTYWNY_ZES_USTAWIEN;
     select wplyw_marketingu_producenta into sr_market_prod from ustawienia_poczatkowe where czy_aktywna = 'a';
 
@@ -747,7 +772,7 @@ BEGIN
             left join reklama_producenta_his ph on m.id_producenta = ph.id_producenta
             left join reklama_marki_his mh on m.id_marki = mh.id_marki
         where
-            m.czy_utworzona = 't'
+            m.runda_utworzenia is not null
             and m.aktualna_liczba_sztuk > 0)
         where rownum = 1
         order by wart_f_osiagniecia desc);
@@ -818,6 +843,17 @@ BEGIN
 END STWORZ_CZASOMIERZ;
 /
 
+CREATE OR REPLACE PROCEDURE ZRESTARTUJ_SEKWENCJE AS 
+BEGIN
+    RESTART_SEKWENCJI ('ID_BADANIA_RYNKU_SEQ');
+    RESTART_SEKWENCJI ('ID_MARKETINGU_SEQ');
+    RESTART_SEKWENCJI ('ID_MARKI_SEQ');
+    RESTART_SEKWENCJI ('ID_PRODUKCJI_SEQ');
+    RESTART_SEKWENCJI ('ID_GRUPY_KONSUMENTOW_SEQ');
+END ZRESTARTUJ_SEKWENCJE;
+
+/
+
 create or replace PROCEDURE ROZPOCZNIJ_GRE AS
 /*
 procedura wywolywana na poczatku w celu uruchomienia nowej gry;
@@ -849,10 +885,10 @@ BEGIN
     GENERUJ_KONSUMENTOW;
     --stworzenie bazowych grup konsumentow
     GENERUJ_GRUPY_KONSUMENTOW;
-    --restartowanie parametrow producentow, czyli graczy
-    RESTART_PARAMETROW_PRODUCENTOW;
     --rozpoczecie pierwszej rundy
     insert into numery_rund values (1);
+    --restartowanie parametrow producentow, czyli graczy
+    RESTART_PARAMETROW_PRODUCENTOW;
     --uruchmienie czasomierza
     STWORZ_CZASOMIERZ;
     commit;

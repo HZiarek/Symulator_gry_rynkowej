@@ -2,10 +2,15 @@ CREATE OR REPLACE VIEW MARKI_P
 AS SELECT 
     m.ID_MARKI,
     m.NAZWA_MARKI,
-    TO_CHAR(m.KOSZT_PRODUKCJI_SZTUKI/100, '99999999999990.99') AS KOSZT_PRODUKCJI_SZTUKI,
+    TO_CHAR(
+        (select koszt_produkcji from (
+            select koszt_produkcji from koszty_produkcji_produktow where id_marki = m.id_marki
+            order by numer_rundy desc)
+         where rownum = 1
+        )/100, '99999999999990.99') AS KOSZT_PRODUKCJI_SZTUKI,
     TO_CHAR(m.CENA_ZA_SZTUKE/100, '99999999999990.99') AS CENA_ZA_SZTUKE,
     m.JAKOSC_MARKI,
-    m.CZY_UTWORZONA,
+    m.RUNDA_UTWORZENIA,
     m.AKTUALNA_LICZBA_SZTUK
 FROM
     MARKI m, PRODUCENCI p
@@ -17,7 +22,95 @@ WHERE
         ,'APP_USER'
     );
     
+CREATE OR REPLACE VIEW KOSZTY_MAGAZYNOWANIA_P
+AS SELECT 
+    c.numer_rundy,
+    (CASE
+        WHEN c.sposob_naliczania_kosztow_mag = 'l'
+            THEN 'LINIOWY'
+        ELSE
+            'MAGAZYNOWY'
+    END) as sposob_naliczania_kosztow_mag,
+    TO_CHAR(c.koszt_mag_sztuki_lub_magazynu/100, '99999999999990.99') AS KOSZT_MAGAZYNOWANIA_SZTUKI_LUB_MAGAZYNU,
+    c.wielkosc_powierzchni_mag,
+    c.upust_za_kolejny_magazyn
+FROM
+    KOSZTY_MAGAZYNOWANIA c, PRODUCENCI p
+WHERE
+    c.id_producenta = p.id_producenta
+    AND
+    p.NAZWA_PRODUCENTA = sys_context(
+        'APEX$SESSION'
+        ,'APP_USER'
+    )
+order by numer_rundy desc
+;
     
+CREATE OR REPLACE VIEW KOSZTY_MARKETINGU_P
+AS select
+    m.id_producenta,
+    n.numer_rundy,
+    (select koszt_bazowy from 
+        (select koszt_bazowy from KOSZTY_MARKETINGU
+        where id_producenta = m.id_producenta and numer_rundy <= n.numer_rundy
+        order by numer_rundy desc)
+        where rownum <= 1) as koszt_bazowy,
+    (select koszt_per_st_intens from 
+        (select koszt_per_st_intens from KOSZTY_MARKETINGU
+        where id_producenta = m.id_producenta and numer_rundy <= n.numer_rundy
+        order by numer_rundy desc)
+        where rownum <= 1) as koszt_per_st_intensywnosci
+from
+    producenci m,
+    numery_rund n
+order by
+    id_producenta, numer_rundy;
+    
+CREATE OR REPLACE VIEW KOSZTY_MAGAZYNOWANIA_W_KOLEJNYCH_RUNDACH_P
+AS select
+    m.id_producenta,
+    n.numer_rundy,
+    (select sposob_naliczania_kosztow_mag from 
+        (select sposob_naliczania_kosztow_mag from KOSZTY_MAGAZYNOWANIA
+        where id_producenta = m.id_producenta and numer_rundy <= n.numer_rundy
+        order by numer_rundy desc)
+        where rownum <= 1) as sposob_naliczania_kosztow_mag,
+    (select koszt_mag_sztuki_lub_magazynu from 
+        (select koszt_mag_sztuki_lub_magazynu from KOSZTY_MAGAZYNOWANIA
+        where id_producenta = m.id_producenta and numer_rundy <= n.numer_rundy
+        order by numer_rundy desc)
+        where rownum <= 1) as koszt_mag_sztuki_lub_magazynu,
+    (select wielkosc_powierzchni_mag from 
+        (select wielkosc_powierzchni_mag from KOSZTY_MAGAZYNOWANIA
+        where id_producenta = m.id_producenta and numer_rundy <= n.numer_rundy
+        order by numer_rundy desc)
+        where rownum <= 1) as wielkosc_powierzchni_mag,
+    (select upust_za_kolejny_magazyn from 
+        (select upust_za_kolejny_magazyn from KOSZTY_MAGAZYNOWANIA
+        where id_producenta = m.id_producenta and numer_rundy <= n.numer_rundy
+        order by numer_rundy desc)
+        where rownum <= 1) as upust_za_kolejny_magazyn
+from
+    producenci m,
+    numery_rund n
+order by
+    id_producenta, numer_rundy;
+
+CREATE OR REPLACE VIEW KOSZTY_PRODUKCJI_PRODUKTOW_P
+AS select
+    m.id_marki,
+    n.numer_rundy,
+    (select koszt_produkcji from 
+        (select koszt_produkcji from KOSZTY_PRODUKCJI_PRODUKTOW
+        where id_marki = m.id_marki and numer_rundy <= n.numer_rundy
+        order by numer_rundy desc)
+        where rownum <= 1) as koszt_produkcji
+from
+    marki m,
+    numery_rund n
+order by
+    id_marki, numer_rundy;
+
 CREATE OR REPLACE VIEW PRODUCENCI_P
 AS SELECT
     ID_PRODUCENTA,
@@ -38,12 +131,14 @@ AS SELECT
     m.NAZWA_MARKI,
     p.NUMER_RUNDY,
     p.WOLUMEN, 
-    TO_CHAR(p.KOSZT_PRODUKCJI/100, '99999999999990.99') AS KOSZT_PRODUKCJI
+    TO_CHAR((c.KOSZT_PRODUKCJI*p.wolumen)/100, '99999999999990.99') AS KOSZT_PRODUKCJI
 FROM
-    PRODUKCJE p, MARKI m, PRODUCENCI r
+    PRODUKCJE p, MARKI m, PRODUCENCI r, KOSZTY_PRODUKCJI_PRODUKTOW_P c
 WHERE
     p.id_marki = m.id_marki
     and m.id_producenta = r.id_producenta
+    and c.id_marki = p.id_marki
+    and c.numer_rundy = p.numer_rundy
     and r.NAZWA_PRODUCENTA = sys_context(
         'APEX$SESSION'
         ,'APP_USER'
@@ -53,13 +148,22 @@ CREATE OR REPLACE VIEW MAGAZYNOWANIE_P
 AS SELECT
     m.NAZWA_MARKI,
     p.NUMER_RUNDY,
-    p.WOLUMEN, 
-    TO_CHAR(p.KOSZT_MAGAZYNOWANIA/100, '99999999999990.99') AS KOSZT_MAGAZYNOWANIA
+    p.WOLUMEN,
+    c.sposob_naliczania_kosztow_mag,
+    TO_CHAR((CASE
+        WHEN c.sposob_naliczania_kosztow_mag = 'l'
+            THEN p.wolumen*c.koszt_mag_sztuki_lub_magazynu
+        ELSE
+            CEIL(p.wolumen/C.WIELKOSC_POWIERZCHNI_MAG)*C.KOSZT_MAG_SZTUKI_LUB_MAGAZYNU*
+            (100 - least(50, (CEIL(p.wolumen/C.WIELKOSC_POWIERZCHNI_MAG) - 1))/100)
+        END)/100, '99999999999990.99') AS KOSZT_MAGAZYNOWANIA
 FROM
-    MAGAZYNOWANIA p, MARKI m, PRODUCENCI r
+    MAGAZYNOWANIA p, MARKI m, PRODUCENCI r, KOSZTY_MAGAZYNOWANIA_W_KOLEJNYCH_RUNDACH_P c
 WHERE
     p.id_marki = m.id_marki
     and m.id_producenta = r.id_producenta
+    and c.id_producenta = r.id_producenta
+    and c.numer_rundy = p.numer_rundy
     and r.NAZWA_PRODUCENTA = sys_context(
         'APEX$SESSION'
         ,'APP_USER'
@@ -71,12 +175,14 @@ AS SELECT
     p.NUMER_RUNDY,
     m.NAZWA_MARKI,
     p.INTENSYWNOSC_MARKETINGU,
-    TO_CHAR(p.KOSZT_MARKETINGU/100, '99999999999990.99') AS KOSZT_MARKETINGU
+    TO_CHAR((c.KOSZT_BAZOWY+C.KOSZT_PER_ST_INTENSYWNOSCI*P.INTENSYWNOSC_MARKETINGU)/100, '99999999999990.99') AS KOSZT_MARKETINGU
 FROM
-    MARKETINGI p, MARKI m, PRODUCENCI r
+    MARKETINGI p, MARKI m, PRODUCENCI r, KOSZTY_MARKETINGU_P c
 WHERE
     p.id_marki = m.id_marki
     and m.id_producenta = r.id_producenta
+    and c.id_producenta = r.id_producenta
+    and c.numer_rundy = p.numer_rundy
     and r.NAZWA_PRODUCENTA = sys_context(
         'APEX$SESSION'
         ,'APP_USER'
@@ -231,4 +337,4 @@ from
     marki m, producenci p
 where
     m.id_producenta = p.id_producenta
-    and czy_utworzona = 't';
+    and M.RUNDA_UTWORZENIA is not null;

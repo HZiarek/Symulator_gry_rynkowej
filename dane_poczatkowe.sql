@@ -1,6 +1,6 @@
 --domyslne ustawienia poczatkowe
 insert into ustawienia_poczatkowe values (null, 'a', --czy jest to aktywny zestaw
-                                            't', --warunek zakonczenia rundy, 't' - czas
+                                            'p', --warunek zakonczenia rundy, 't' - czas
                                             null, --czas rundy
                                             null, --liczba rund
                                             90000000, --poczatkowe fundusze
