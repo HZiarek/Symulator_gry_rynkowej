@@ -300,14 +300,15 @@ create or replace PROCEDURE OCEN_MARKE(BADANIE_RYNKU NUMBER, MARKA NUMBER, GRUPA
     liczba_wszystkich_marek NUMBER;
     sr_market_prod NUMBER;
 BEGIN
-    select max(numer_rundy) into nr_rundy from numery_rund;
-    select count(id_marki) into liczba_wszystkich_marek from marki where runda_utworzenia is not null;
-    --badanie rynku odbywa sie jako porownanie pewnej marki (utworzonej lub nie) z pozostalymi markami dostepnymi na rynku, czyli utworzonymi
-    --jesli badana marka nie zostala jeszcze utworzona to liczebnosc zbioru analizowanych marek musi zostac zwiekszona o 1
-    select count(id_marki) into czy_docelowa_marka_utworzona from marki where runda_utworzenia is null and id_marki = marka;
-    liczba_wszystkich_marek := liczba_wszystkich_marek + czy_docelowa_marka_utworzona;
+    select count(id_marki) into liczba_wszystkich_marek from marki where runda_utworzenia is not null and id_marki != marka;
+    --badanie rynku odbywa sie jako porownanie pewnej marki (utworzonej lub nie) z pozostalymi markami dostepnymi na rynku, a wiec
+    --badanie moze sie odbyc tylko jesli na rynku istnieje co najmniej jedna marka inna od tej badanej
+    if liczba_wszystkich_marek = 0 then
+        raise_application_error(-20810, 'Na rynku nie ma wystarczajaco wiele marek, aby mozna bylo przeprowadzic badania');
+    end if;
     
     SPR_CZY_ISTNIEJE_AKTYWNY_ZES_USTAWIEN;
+    select max(numer_rundy) into nr_rundy from numery_rund;
     select wplyw_marketingu_producenta into sr_market_prod from ustawienia_poczatkowe where czy_aktywna = 'a';
     
     FOR REC IN ((
@@ -516,20 +517,16 @@ BEGIN
             select
                 p.id_producenta,
                 p.liczba_sztuk,
-                (select SPOSOB_NALICZANIA_KOSZTOW_MAG from 
-                    (select SPOSOB_NALICZANIA_KOSZTOW_MAG from KOSZTY_MAGAZYNOWANIA_P c where c.id_producenta = p.id_producenta order by numer_rundy desc)
-                where rownum = 1) as SPOSOB_NALICZANIA_KOSZTOW_MAG,
-                (select KOSZT_MAG_SZTUKI_LUB_MAGAZYNU from 
-                    (select KOSZT_MAG_SZTUKI_LUB_MAGAZYNU from KOSZTY_MAGAZYNOWANIA_P c where c.id_producenta = p.id_producenta order by numer_rundy desc)
-                where rownum = 1) as KOSZT_MAG_SZTUKI_LUB_MAGAZYNU,
-                (select WIELKOSC_POWIERZCHNI_MAG from 
-                    (select WIELKOSC_POWIERZCHNI_MAG from KOSZTY_MAGAZYNOWANIA_P c where c.id_producenta = p.id_producenta order by numer_rundy desc)
-                where rownum = 1) as WIELKOSC_POWIERZCHNI_MAG,
-                (select UPUST_ZA_KOLEJNY_MAGAZYN from 
-                    (select UPUST_ZA_KOLEJNY_MAGAZYN from KOSZTY_MAGAZYNOWANIA_P c where c.id_producenta = p.id_producenta order by numer_rundy desc)
-                where rownum = 1) as UPUST_ZA_KOLEJNY_MAGAZYN
-            from(
-                select id_producenta, sum(aktualna_liczba_sztuk) as liczba_sztuk from marki where aktualna_liczba_sztuk > 0 group by id_producenta) p
+                c.sposob_naliczania_kosztow_mag,
+                c.koszt_mag_sztuki_lub_magazynu,
+                c.wielkosc_powierzchni_mag,
+                c.upust_za_kolejny_magazyn
+            from
+                (select id_producenta, sum(aktualna_liczba_sztuk) as liczba_sztuk from marki where aktualna_liczba_sztuk > 0 group by id_producenta) p,
+                (select id_producenta, numer_rundy, sposob_naliczania_kosztow_mag, koszt_mag_sztuki_lub_magazynu,
+                        wielkosc_powierzchni_mag, upust_za_kolejny_magazyn from koszty_magazynowania_w_kolejnych_rundach_p where numer_rundy = nr_rundy) c
+            where
+                c.id_producenta = p.id_producenta
             )
         LOOP
 

@@ -48,7 +48,7 @@ BEGIN
                 :new.UWZGLEDNIC_HIS_ZAKUPOW,
                 :new.UWZG_MARKETING_OST_RUNDA,
                 :new.UWZGLEDNIC_MARKETING
-                );
+                );  
 
     --okreslenie id producenta
     select id_producenta into id_prod from marki where id_marki = :new.id_marki;
@@ -375,8 +375,8 @@ BEGIN
 END;
 /
 
---TODO
-create or replace TRIGGER AKTUALIZOWANIE_CENY_PRODUKCJI 
+
+create or replace TRIGGER WPROWADZANIE_NOWEJ_CENY_PRODUKCJI 
 BEFORE INSERT ON KOSZTY_PRODUKCJI_PRODUKTOW
 FOR EACH ROW
 DECLARE
@@ -385,7 +385,7 @@ zlecone_produkcje number;
 BEGIN
     /*
     nie mozna wpisac nowej ceny produkcji marki jesli w danej rundzie producent zlecil juz jakas produkcje wybranej marki,
-    poniewaz dla wszystkich operacji produkcji produktow danej marki w jednej rundzie musi obowiazywac jedna cena
+    poniewaz dla wszystkich produkcji produktow danej marki w jednej rundzie musi obowiazywac jedna cena
     ma to na celu przypisanie zmian parametrow do miary czasu, jaki w symulatorze stanowi runda - w danej rundzie obowiazuje taka cena,
     w nastepnej inna, ale przez cala runde ta sama
     proba monitorowania zmian na przestrzeni rundy pociagalaby za soba koniecznosc zapisywania czasu realizacji kazdej z operacji
@@ -397,18 +397,111 @@ BEGIN
         raise_application_error(-20881, 'W tej rundzie zlecono juz produkcje po poprzedniej cenie');
     end if;
     
-    BEGIN
-        :new.numer_rundy := nr_rundy;
+    :new.numer_rundy := nr_rundy;
 
-    EXCEPTION
-    --przechwycenie wyjatku naruszenia wiezow integralnosci
-    --taki blad moze sie pojawic w sytuacji gdy w danej rundzie cena zostala juz raz zmieniona,
-    --poniewaz kluczem glownym tabeli historia cen jest para numer_rundy oraz id_marki
-    --nie ma sensu tworzyc oddzielnego identyfikatora i zapamietywac wszystkich zmiany, poniewaz ostatecznie
-    --znaczenie ma tylko ostatnia zmiana ceny w danej rundzie, ta ktora bedzie wplywala na zakup konsumenta
-        WHEN DUP_VAL_ON_INDEX
-        THEN
-            UPDATE KOSZTY_PRODUKCJI_PRODUKTOW set koszt_produkcji = :new.koszt_produkcji where id_marki = :new.id_marki and numer_rundy = nr_rundy;
-        END;
+END;
+/
+
+create or replace TRIGGER AKTUALIZOWANIE_CENY_PRODUKCJI 
+BEFORE UPDATE ON KOSZTY_PRODUKCJI_PRODUKTOW
+FOR EACH ROW
+DECLARE
+nr_rundy number (5,0);
+zlecone_produkcje number;
+BEGIN
+    /*
+    nie mozna wpisac nowej ceny produkcji marki jesli w danej rundzie producent zlecil juz jakas produkcje wybranej marki,
+    poniewaz dla wszystkich produkcji produktow danej marki w jednej rundzie musi obowiazywac jedna cena
+    ma to na celu przypisanie zmian parametrow do miary czasu, jaki w symulatorze stanowi runda - w danej rundzie obowiazuje taka cena,
+    w nastepnej inna, ale przez cala runde ta sama
+    proba monitorowania zmian na przestrzeni rundy pociagalaby za soba koniecznosc zapisywania czasu realizacji kazdej z operacji
+    */
+    select max(numer_rundy) into nr_rundy from NUMERY_RUND;
+    
+    if :old.numer_rundy != nr_rundy then
+        raise_application_error(-20882, 'Dozwolone jest tylko modyfikowanie wartosci odnoszacych sie do aktualnej rundy');
+    end if;
+    
+    select count(id_marki) into zlecone_produkcje from produkcje where numer_rundy = nr_rundy and id_marki = :new.id_marki;
+    if zlecone_produkcje > 0 then
+        raise_application_error(-20881, 'W tej rundzie zlecono juz produkcje po poprzedniej cenie');
+    end if;
+    
+    :new.numer_rundy := nr_rundy;
+END;
+/
+
+create or replace TRIGGER WPROWADZANIE_NOWEJ_CENY_MARKETINGU 
+BEFORE INSERT ON KOSZTY_MARKETINGU
+FOR EACH ROW
+DECLARE
+nr_rundy number (5,0);
+przeprowadzone_kampanie number;
+BEGIN
+    /*
+    nie mozna wpisac nowej ceny marketingu jesli w danej rundzie producent przeprowadzil juz jakas kampanie,
+    poniewaz dla wszystkich kampanii w jednej rundzie musi obowiazywac jedna cena
+    ma to na celu przypisanie zmian parametrow do miary czasu, jaki w symulatorze stanowi runda - w danej rundzie obowiazuje taka cena,
+    w nastepnej inna, ale przez cala runde ta sama
+    proba monitorowania zmian na przestrzeni rundy pociagalaby za soba koniecznosc zapisywania czasu realizacji kazdej z operacji
+    */
+    select max(numer_rundy) into nr_rundy from NUMERY_RUND;
+    
+    select count(m.id_marketingu) into przeprowadzone_kampanie from marketingi m, marki p 
+        where numer_rundy = nr_rundy and p.id_marki = m.id_marki and p.id_producenta = :new.id_producenta;
+    
+    if przeprowadzone_kampanie > 0 then
+        raise_application_error(-20883, 'W tej rundzie przeprowadzono juz kampanie marketingowa po poprzedniej cenie');
+    end if;
+    
+    :new.numer_rundy := nr_rundy;
+
+END;
+/
+
+create or replace TRIGGER AKTUALIZOWANIE_CENY_MARKETINGU 
+BEFORE UPDATE ON KOSZTY_MARKETINGU
+FOR EACH ROW
+DECLARE
+nr_rundy number (5,0);
+przeprowadzone_kampanie number;
+BEGIN
+    /*
+    nie mozna wpisac nowej ceny marketingu jesli w danej rundzie producent przeprowadzil juz jakas kampanie,
+    poniewaz dla wszystkich kampanii w jednej rundzie musi obowiazywac jedna cena
+    ma to na celu przypisanie zmian parametrow do miary czasu, jaki w symulatorze stanowi runda - w danej rundzie obowiazuje taka cena,
+    w nastepnej inna, ale przez cala runde ta sama
+    proba monitorowania zmian na przestrzeni rundy pociagalaby za soba koniecznosc zapisywania czasu realizacji kazdej z operacji
+    */
+    select max(numer_rundy) into nr_rundy from NUMERY_RUND;
+    
+    if :old.numer_rundy != nr_rundy then
+        raise_application_error(-20882, 'Dozwolone jest tylko modyfikowanie wartosci odnoszacych sie do aktualnej rundy');
+    end if;
+    
+    select count(m.id_marketingu) into przeprowadzone_kampanie from marketingi m, marki p 
+        where numer_rundy = nr_rundy and p.id_marki = m.id_marki and p.id_producenta = :new.id_producenta;
+    
+    if przeprowadzone_kampanie > 0 then
+        raise_application_error(-20884, 'W tej rundzie przeprowadzono juz kampanie marketingowa po poprzedniej cenie');
+    end if;
+    
+    :new.numer_rundy := nr_rundy;
+END;
+/
+
+create or replace TRIGGER AKTUALIZOWANIE_KOSZTOW_MAGAZYNOWANIA 
+BEFORE UPDATE ON KOSZTY_MAGAZYNOWANIA
+FOR EACH ROW
+DECLARE
+nr_rundy number (5,0);
+BEGIN
+    select max(numer_rundy) into nr_rundy from NUMERY_RUND;
+    
+    if :old.numer_rundy != nr_rundy then
+        raise_application_error(-20882, 'Dozwolone jest tylko modyfikowanie wartosci odnoszacych sie do aktualnej rundy');
+    end if;
+    
+    :new.numer_rundy := nr_rundy;
 END;
 /
