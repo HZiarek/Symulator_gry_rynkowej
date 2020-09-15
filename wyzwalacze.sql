@@ -167,6 +167,7 @@ FOR EACH ROW
 DECLARE
 koszt NUMBER (15, 0);
 fundusze_producenta NUMBER;
+licznosc_gr number;
 BEGIN
     --wstawienie nr rundy
     select max(numer_rundy) into :new.numer_rundy from NUMERY_RUND;
@@ -174,6 +175,12 @@ BEGIN
     --sprawdzenie czy historia nie jest za dluga
     if :new.numer_rundy - :new.HIS_ZAKUPOW_LICZBA_RUND < 1 or :new.HIS_ZAKUPOW_LICZBA_RUND > 6 then
         raise_application_error(-20802, 'Proba uzyskania historii zakupow konsumentow ze zbyt wielu rund');
+    end if;
+    
+    --sprawdzenie czy do wybranej grupy konsumentow nalezychoc jeden konsument
+    select count(id_grupy_konsumentow) into licznosc_gr from przynaleznosci_do_grup where id_grupy_konsumentow = :new.id_grupy_konsumentow;
+    if licznosc_gr < 1 then
+        raise_application_error(-20803, 'Proba przeprowadzenia badania na pustej grupie konsumentow');
     end if;
 
     --obliczenie kosztu
@@ -321,6 +328,10 @@ FOR EACH ROW
 DECLARE
 nr_rundy number (5,0);
 BEGIN
+    if :new.cena_za_sztuke <= 0 then
+        raise_application_error(-20950, 'Cena musi byc wieksza od 0.');
+    end if;
+
     select max(numer_rundy) into nr_rundy from NUMERY_RUND;
     BEGIN
         insert into HISTORIE_CEN values (:new.cena_za_sztuke, :new.id_marki, nr_rundy);
@@ -349,7 +360,7 @@ BEGIN
         raise_application_error(-20900, 'Maksymalna przewidywana cena produktu jest mniejsza lub rowna minimalnej przewidywanej cenie produktu');
     end if;
     
-    if :new.wym_kons_max_roznica_cena <= :new.wym_kons_min_roznica_cena then
+    if :new.wym_kons_max_roznica_cena <= :new.wym_kons_min_roznica_cena or :new.wym_kons_max_roznica_cena > (:new.wym_max_cena - :new.wym_min_cena) then
         raise_application_error(-20901, 'Maksymalna roznica miedzy poziomem apiracji a poziomem rezerwacji ceny jest mniejsza lub rowna minimalnej');
     end if;
     
@@ -503,5 +514,37 @@ BEGIN
     end if;
     
     :new.numer_rundy := nr_rundy;
+END;
+/
+
+
+create or replace TRIGGER SPR_MOZLIWOSC_DODANIA_KONSUMENTA_DO_GR
+--jezeli grupa zostala juz wykorzystana w badaniu rynku, wowczas nie mozna modyfikowac
+--jej skladu, poniewaz uniemozliwiloby to efektywne porownywanie wynikow badania
+BEFORE INSERT OR DELETE OR UPDATE ON PRZYNALEZNOSCI_DO_GRUP
+FOR EACH ROW
+DECLARE
+    uzycia_gr number;
+BEGIN  
+    select count(id_grupy_konsumentow) into uzycia_gr from badania_rynku where id_grupy_konsumentow = :new.id_grupy_konsumentow;
+    if uzycia_gr > 0 then
+        raise_application_error(-20970, 'Nie mozna dodac konsumenta do grupy, poniewaz zostala ona juz wykorzystana w badaniu rynku');
+    end if;
+END;
+/
+
+
+create or replace TRIGGER SPR_MOZLIWOSC_USUNIECIA_GR_KONSUMENTOW
+--jezeli grupa zostala juz wykorzystana w badaniu rynku, wowczas nie mozna jej usunac,
+--poniewaz utracone zostalyby powiazania i informacje zdobyte podczas badania
+BEFORE DELETE ON GRUPY_KONSUMENTOW
+FOR EACH ROW
+DECLARE
+    uzycia_gr number;
+BEGIN  
+    select count(id_grupy_konsumentow) into uzycia_gr from badania_rynku where id_grupy_konsumentow = :new.id_grupy_konsumentow;
+    if uzycia_gr > 0 then
+        raise_application_error(-20971, 'Nie mozna usunac grupy, poniewaz zostala ona juz wykorzystana w badaniu rynku');
+    end if;
 END;
 /

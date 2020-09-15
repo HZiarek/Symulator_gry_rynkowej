@@ -355,3 +355,17 @@ from
 where
     m.id_producenta = p.id_producenta
     and M.RUNDA_UTWORZENIA is not null;
+    
+    
+CREATE OR REPLACE VIEW GRUPY_KONSUMENTOW_P
+AS SELECT
+    gr.id_grupy_konsumentow,
+    licz.licznosc_gr as liczba_konsumentow, 
+    TO_CHAR((gr.koszt_uzyskania_ocen)/100, '99999999999990.99') as koszt_uzyskania_ocen,
+    TO_CHAR((gr.koszt_his_zakup_jedna_tura)/100, '99999999999990.99') as koszt_his_zakup_jedna_tura,
+    gr.opis
+from
+    (select id_grupy_konsumentow, count(id_grupy_konsumentow) as licznosc_gr from przynaleznosci_do_grup group by id_grupy_konsumentow) licz,
+    grupy_konsumentow gr
+where
+    gr.id_grupy_konsumentow = licz.id_grupy_konsumentow;

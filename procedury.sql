@@ -191,7 +191,7 @@ BEGIN
         cena_aspiracja := DBMS_RANDOM.value(min_cena + (i-1)*krok_cena, min_cena + (i-1)*krok_cena + max_roznica_cena - min_roznica_cena);
         jakosc_rezerwacja := DBMS_RANDOM.value(min_jakosc + (i-1)*krok_jakosc, min_jakosc + (i-1)*krok_jakosc + max_roznica_jakosc - min_roznica_jakosc);
         his_zakupow_rezerwacja := DBMS_RANDOM.value(min_his_zakupow, max_his_zakupow - min_roznica_his_zakupow);
-        marketing_rezerwacja := DBMS_RANDOM.value(min_marketing, max_marketing - min_marketing);
+        marketing_rezerwacja := DBMS_RANDOM.value(min_marketing, max_marketing - min_roznica_marketing);
         insert into konsumenci values (i,
 
                             cena_aspiracja,                                             --cena
@@ -218,7 +218,9 @@ tworzenie grup ma glownie charakter testowy, ale stanowi tez swego rodzaju zabez
 gre nie chcial lub nie mogl stworzyc innych grup; dzieki tym wygenerowanym grupom wciaz mozliwe jest przeprowadzenie
 rynku przez graczy
 ---------------------------------------------------------------------------------------------------------
-procedura zawsze genruje 5, rowno licznych grup; jesli liczba konsumentow nie jest podzielna przez 5, wowczas piata grupa
+procedura zawsze generuje 5 grup o liczebnosci nie wiekszej niz 1000; jesli liczba konsumentow
+jest mniejsza od 5000, wowcas konsumenci sa dzieleni na rowne grupy;
+jesli liczba konsumentow nie jest podzielna przez 5, wowczas piata grupa
 jest nieco mniejsza;
 */
 IS
@@ -243,6 +245,8 @@ IS
     gr_5_his_zakupow NUMBER := 1000;
 BEGIN
     select liczba_konsumentow into liczebnosc_konsumentow from ustawienia_poczatkowe where czy_aktywna = 'a';
+    liczebnosc_konsumentow := least(liczebnosc_konsumentow, 5000);
+    
     liczebnosc_grupy := ceil(liczebnosc_konsumentow / 5);
 
     insert into grupy_konsumentow values (null, liczebnosc_grupy*gr_1_ocena, liczebnosc_grupy*gr_1_his_zakupow, null);
@@ -629,6 +633,15 @@ BEGIN
     EXECUTE IMMEDIATE 'TRUNCATE TABLE produkcje';
     EXECUTE IMMEDIATE 'TRUNCATE TABLE marketingi';
     EXECUTE IMMEDIATE 'TRUNCATE TABLE PRZYNALEZNOSCI_DO_GRUP';
+    EXECUTE IMMEDIATE 'TRUNCATE TABLE KOSZTY_MAGAZYNOWANIA';
+    EXECUTE IMMEDIATE 'TRUNCATE TABLE KOSZTY_MARKETINGU';
+    EXECUTE IMMEDIATE 'TRUNCATE TABLE KOSZTY_PRODUKCJI_PRODUKTOW';
+    
+    EXECUTE IMMEDIATE 'alter table oceny_marek disable constraint OCENY_MAREK_BADANIA_RYNKU_FK';
+    EXECUTE IMMEDIATE 'alter table dostepy_producentow_his_zakup disable constraint DOST_PROD_BADANIA_RYNKU_FK';
+    EXECUTE IMMEDIATE 'truncate table badania_rynku';
+    EXECUTE IMMEDIATE 'alter table oceny_marek enable constraint OCENY_MAREK_BADANIA_RYNKU_FK';
+    EXECUTE IMMEDIATE 'alter table dostepy_producentow_his_zakup enable constraint DOST_PROD_BADANIA_RYNKU_FK';
 
     EXECUTE IMMEDIATE 'alter table badania_rynku disable constraint BADANIA_RYNKU_GRY_KONS_FK';
     EXECUTE IMMEDIATE 'alter table przynaleznosci_do_grup disable constraint PRZYN_DO_GRUP_GRY_KONS_FK';
@@ -639,12 +652,6 @@ BEGIN
     EXECUTE IMMEDIATE 'alter table dostepy_producentow_his_zakup disable constraint DOST_PROD_ZAKUPY_KONS_FK';
     EXECUTE IMMEDIATE 'truncate table zakupy_konsumentow';
     EXECUTE IMMEDIATE 'alter table dostepy_producentow_his_zakup enable constraint DOST_PROD_ZAKUPY_KONS_FK';
-
-    EXECUTE IMMEDIATE 'alter table oceny_marek disable constraint OCENY_MAREK_BADANIA_RYNKU_FK';
-    EXECUTE IMMEDIATE 'alter table dostepy_producentow_his_zakup disable constraint DOST_PROD_BADANIA_RYNKU_FK';
-    EXECUTE IMMEDIATE 'truncate table badania_rynku';
-    EXECUTE IMMEDIATE 'alter table oceny_marek enable constraint OCENY_MAREK_BADANIA_RYNKU_FK';
-    EXECUTE IMMEDIATE 'alter table dostepy_producentow_his_zakup enable constraint DOST_PROD_BADANIA_RYNKU_FK';
 
     EXECUTE IMMEDIATE 'alter table oceny_marek disable constraint OCENY_MAREK_KONSUMENCI_FK';
     EXECUTE IMMEDIATE 'alter table zakupy_konsumentow disable constraint ZAKUPY_KONSUMENTOW_KONS_FK';
@@ -686,7 +693,7 @@ BEGIN
                     konsumenci))
     LOOP
 
-    if liczba_produktow = 0 then
+    if liczba_produktow = 0 or liczba_produktow is null then
         insert into zakupy_konsumentow values (nr_rundy, rec.id_konsumenta, null);
     else
 

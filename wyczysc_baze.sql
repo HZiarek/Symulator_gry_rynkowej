@@ -22,7 +22,12 @@ DROP TABLE producenci;
 drop view badania_rynku_p;
 drop view dostep_do_his_zakupow_p;
 drop view historie_cen_p;
-drop view magazynowanie_p;
+drop view historia_magazynowania_p;
+drop view koszty_magazynowania_producenta_p;
+drop view koszty_magazynowania_w_kolejnych_rundach_p;
+drop view koszty_marketingu_producenta_p;
+drop view koszty_marketingu_w_kolejnych_rundach_p;
+drop view koszty_produkcji_produktow_p;
 drop view marketing_p;
 drop view marki_na_rynku_p;
 drop view marki_p;
@@ -57,6 +62,7 @@ DROP SEQUENCE ID_MARKETINGU_SEQ;
 DROP SEQUENCE ID_MARKI_SEQ;
 DROP SEQUENCE ID_PRODUKCJI_SEQ;
 DROP SEQUENCE NR_ZESTAWU_USTAWIEN_POCZ_SEQ;
+DROP SEQUENCE ID_PRODUCENTA_SEQ;
 
 
 

@@ -273,3 +273,24 @@ where
     and m.id_producenta = ph.id_producenta
     and m.czy_utworzona = 't'
     and aktualna_liczba_sztuk > 0);
+
+
+
+update ustawienia_poczatkowe set liczba_konsumentow = 10000;
+commit;
+
+execute ROZPOCZNIJ_GRE;
+
+insert into marki values (null, 1, 'ALA', 2, 1000, 1, 1500, 1500);
+insert into marki values (null, 1, 'FIONA', 2, 1000, 1, 1500, 1500);
+insert into marki values (null, 1, 'ELA', 2, 1000, 1, 1550, 1500);
+insert into marki values (null, 1, 'ULA', 3, 1000, 1, 1600, 1500);
+insert into marki values (null, 1, 'BASIA', 3, 1000, 1, 1800, 1500);
+insert into marki values (null, 1, 'ZUZIA', 4, 1000, 1, 1800, 1500);
+insert into marki values (null, 1, 'JULKA', 4, 1000, 1, 1900, 1500);
+insert into marki values (null, 1, 'NASTKA', 5, 1000, 1, 2000, 1500);
+
+commit;
+
+update marki set aktualna_liczba_sztuk = 1500;
+commit;
