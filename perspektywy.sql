@@ -116,6 +116,8 @@ order by
 CREATE OR REPLACE VIEW KOSZTY_PRODUKCJI_PRODUKTOW_P
 AS select
     m.id_marki,
+    m.nazwa_marki,
+    m.id_producenta,
     n.numer_rundy,
     (select koszt_produkcji from 
         (select koszt_produkcji from KOSZTY_PRODUKCJI_PRODUKTOW
@@ -127,6 +129,25 @@ from
     numery_rund n
 order by
     id_marki, numer_rundy;
+    
+
+CREATE OR REPLACE VIEW KOSZTY_PRODUKCJI_PRODUCENTOW_P
+AS select
+    c.id_marki,
+    c.nazwa_marki,
+    c.numer_rundy,
+    --TO_CHAR(c.koszt_produkcji/100, '99999999999990.99') as koszt_produkcji
+    c.koszt_produkcji/100 as koszt_produkcji
+from
+    KOSZTY_PRODUKCJI_PRODUKTOW_P c,
+    producenci p
+WHERE
+    p.id_producenta = c.id_producenta
+    and
+    NAZWA_PRODUCENTA = sys_context(
+        'APEX$SESSION'
+        ,'APP_USER'
+    );
 
 CREATE OR REPLACE VIEW PRODUCENCI_P
 AS SELECT

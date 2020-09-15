@@ -20,6 +20,8 @@ BEGIN
     
     SPR_CZY_ISTNIEJE_AKTYWNY_ZES_USTAWIEN;
     select poczatkowe_fundusze into :new.fundusze from USTAWIENIA_POCZATKOWE where czy_aktywna = 'a';
+    
+    :new.czy_spasowal := 'n';
 END;
 /
 

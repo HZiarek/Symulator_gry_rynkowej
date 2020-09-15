@@ -288,7 +288,7 @@ CREATE TABLE marki (
     nazwa_marki             VARCHAR2(20 CHAR) NOT NULL,
     jakosc_marki            NUMBER(2) NOT NULL,
     koszt_utworzenia        NUMBER(8) NOT NULL,
-    runda_utworzenia        NUMBER(3) NOT NULL,
+    runda_utworzenia        NUMBER(3),
     cena_za_sztuke          NUMBER(8) NOT NULL,
     aktualna_liczba_sztuk   NUMBER(15) DEFAULT 0 NOT NULL
 );
